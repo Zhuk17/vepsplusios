@@ -30,7 +30,7 @@ namespace VepsPlusApi.Migrations
                 oldType: "text");
 
             migrationBuilder.AlterColumn<string>(
-                name: "PasswordHash",
+                name: "Password",
                 table: "Users",
                 type: "character varying(255)",
                 maxLength: 255,
@@ -398,7 +398,7 @@ namespace VepsPlusApi.Migrations
                 oldMaxLength: 50);
 
             migrationBuilder.AlterColumn<string>(
-                name: "PasswordHash",
+                name: "Password",
                 table: "Users",
                 type: "text",
                 nullable: false,

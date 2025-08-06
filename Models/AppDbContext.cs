@@ -29,7 +29,7 @@ namespace VepsPlusApi.Models
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Username).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.PasswordHash).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Password).HasMaxLength(255).IsRequired();
                 entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
