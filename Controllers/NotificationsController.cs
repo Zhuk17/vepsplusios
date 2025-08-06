@@ -20,7 +20,12 @@ namespace VepsPlusApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetNotifications()
         {
-            var userId = 1;
+            var userIdClaim = User.FindFirst("sub")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid user ID in token");
+            }
+
             var notifications = await _dbContext.Notifications
                 .Where(n => n.UserId == userId)
                 .ToListAsync();
@@ -30,7 +35,14 @@ namespace VepsPlusApi.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
-            var notification = await _dbContext.Notifications.FindAsync(id);
+            var userIdClaim = User.FindFirst("sub")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid user ID in token");
+            }
+
+            var notification = await _dbContext.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
             if (notification == null)
             {
                 return NotFound("Уведомление не найдено");

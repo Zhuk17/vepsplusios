@@ -28,13 +28,19 @@ namespace VepsPlusApi.Controllers
             {
                 if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
                 {
-                    return BadRequest("Invalid request body");
+                    return BadRequest("Invalid request: Username or Password is empty");
                 }
 
-                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-                if (user == null || user.Password != request.Password) // Прямая проверка пароля
+                var user = await _dbContext.Users
+                    .FirstOrDefaultAsync(u => u.Username == request.Username);
+                if (user == null)
                 {
-                    return Unauthorized("Invalid credentials");
+                    return Unauthorized("User not found");
+                }
+
+                if (user.Password != request.Password)
+                {
+                    return Unauthorized("Invalid password");
                 }
 
                 var token = GenerateJwtToken(user);
@@ -42,12 +48,17 @@ namespace VepsPlusApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, $"Internal server error: {ex.Message} - {ex.InnerException?.Message}");
             }
         }
 
         private string GenerateJwtToken(User user)
         {
+            if (string.IsNullOrEmpty(_configuration["Jwt:Key"]))
+            {
+                throw new ArgumentNullException("Jwt:Key", "JWT Key is not configured in appsettings.json");
+            }
+
             var claims = new[]
             {
                 new Claim("sub", user.Id.ToString()),

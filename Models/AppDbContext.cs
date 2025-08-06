@@ -39,8 +39,12 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.Date).IsRequired();
                 entity.Property(e => e.Hours).IsRequired();
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId);
+
+                entity.HasOne(e => e.User)
+                      .WithMany() // или .WithMany(u => u.Timesheets), если добавишь список в User
+                      .HasForeignKey(e => e.UserId);
             });
+
 
             modelBuilder.Entity<FuelRecord>(entity =>
             {
