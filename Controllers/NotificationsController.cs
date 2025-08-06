@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
@@ -7,7 +6,6 @@ namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/notifications")]
     [ApiController]
-    [Authorize]
     public class NotificationsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -18,12 +16,11 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetNotifications()
+        public async Task<IActionResult> GetNotifications([FromQuery] int userId)
         {
-            var userIdClaim = User.FindFirst("sub")?.Value;
-            if (!int.TryParse(userIdClaim, out var userId))
+            if (userId <= 0)
             {
-                return Unauthorized("Invalid user ID in token");
+                return BadRequest("Invalid user ID");
             }
 
             var notifications = await _dbContext.Notifications
@@ -33,12 +30,11 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> MarkAsRead(int id)
+        public async Task<IActionResult> MarkAsRead(int id, [FromQuery] int userId)
         {
-            var userIdClaim = User.FindFirst("sub")?.Value;
-            if (!int.TryParse(userIdClaim, out var userId))
+            if (userId <= 0)
             {
-                return Unauthorized("Invalid user ID in token");
+                return BadRequest("Invalid user ID");
             }
 
             var notification = await _dbContext.Notifications

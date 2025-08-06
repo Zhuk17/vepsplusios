@@ -41,7 +41,7 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasOne(e => e.User)
-                      .WithMany() // или .WithMany(u => u.Timesheets), если добавишь список в User
+                      .WithMany()
                       .HasForeignKey(e => e.UserId);
             });
 

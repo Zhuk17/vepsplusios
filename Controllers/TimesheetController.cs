@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using VepsPlusApi.Models;
 
@@ -10,7 +9,6 @@ namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/timesheet")]
     [ApiController]
-    [Authorize]
     public class TimesheetController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -21,9 +19,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTimesheets([FromQuery] string startDate, [FromQuery] string endDate, [FromQuery] string worker, [FromQuery] string project, [FromQuery] string status)
+        public async Task<IActionResult> GetTimesheets([FromQuery] int userId, [FromQuery] string startDate, [FromQuery] string endDate, [FromQuery] string worker, [FromQuery] string project, [FromQuery] string status)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
             var query = _dbContext.Timesheets
                 .Include(t => t.User)
                 .Where(t => t.UserId == userId);
@@ -51,14 +53,19 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTimesheet([FromBody] Timesheet request)
+        public async Task<IActionResult> AddTimesheet([FromQuery] int userId, [FromBody] Timesheet request)
         {
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
             if (request == null || request.Hours <= 0 || string.IsNullOrWhiteSpace(request.Project))
             {
                 return BadRequest("Некорректные данные табеля");
             }
 
-            request.UserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            request.UserId = userId;
             request.CreatedAt = DateTime.UtcNow;
             request.Status = "На рассмотрении";
 
@@ -81,9 +88,14 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateTimesheet(int id, [FromBody] Timesheet update)
+        public async Task<IActionResult> UpdateTimesheet(int id, [FromQuery] int userId, [FromBody] Timesheet update)
         {
-            var timesheet = await _dbContext.Timesheets.FindAsync(id);
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
+            var timesheet = await _dbContext.Timesheets.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
             if (timesheet == null)
             {
                 return NotFound("Табель не найден");

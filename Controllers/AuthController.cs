@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 
 namespace VepsPlusApi.Controllers
 {
@@ -13,12 +9,10 @@ namespace VepsPlusApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
-        private readonly IConfiguration _configuration;
 
-        public AuthController(AppDbContext dbContext, IConfiguration configuration)
+        public AuthController(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -43,36 +37,12 @@ namespace VepsPlusApi.Controllers
                     return Unauthorized("Invalid password");
                 }
 
-                var token = GenerateJwtToken(user);
-                return Ok(new LoginResponse { Token = token });
+                return Ok(new LoginResponse { UserId = user.Id, Username = user.Username });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message} - {ex.InnerException?.Message}");
             }
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            if (string.IsNullOrEmpty(_configuration["Jwt:Key"]))
-            {
-                throw new ArgumentNullException("Jwt:Key", "JWT Key is not configured in appsettings.json");
-            }
-
-            var claims = new[]
-            {
-                new Claim("sub", user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 
@@ -84,7 +54,8 @@ namespace VepsPlusApi.Controllers
 
     public class LoginResponse
     {
-        public string Token { get; set; }
+        public int UserId { get; set; }
+        public string Username { get; set; }
     }
 }
 

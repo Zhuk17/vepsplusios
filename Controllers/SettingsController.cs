@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using VepsPlusApi.Models;
 
@@ -10,7 +8,6 @@ namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/settings")]
     [ApiController]
-    [Authorize]
     public class SettingsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -21,13 +18,11 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSettings()
+        public async Task<IActionResult> GetSettings([FromQuery] int userId)
         {
-            // Извлекаем UserId из JWT-токена
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            if (userId <= 0)
             {
-                return Unauthorized("Неверный токен авторизации: не удалось определить пользователя.");
+                return BadRequest("Invalid user ID");
             }
 
             var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
@@ -39,13 +34,11 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateSettings([FromBody] Settings update)
+        public async Task<IActionResult> UpdateSettings([FromQuery] int userId, [FromBody] Settings update)
         {
-            // Извлекаем UserId из JWT-токена
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            if (userId <= 0)
             {
-                return Unauthorized("Неверный токен авторизации: не удалось определить пользователя.");
+                return BadRequest("Invalid user ID");
             }
 
             var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
@@ -57,7 +50,6 @@ namespace VepsPlusApi.Controllers
 
             settings.DarkTheme = update.DarkTheme;
             settings.PushNotifications = update.PushNotifications;
-            // Используем ?? для Language, как в первом варианте, чтобы избежать перезаписи null
             settings.Language = update.Language ?? settings.Language;
             settings.UpdatedAt = DateTime.UtcNow;
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
 
@@ -7,7 +6,6 @@ namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/fuel")]
     [ApiController]
-    [Authorize]
     public class FuelController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -18,10 +16,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFuelRecords()
+        public async Task<IActionResult> GetFuelRecords([FromQuery] int userId)
         {
-            // TODO: Получить UserId из JWT-токена
-            var userId = 1; // Заглушка для теста
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
             var records = await _dbContext.FuelRecords
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
@@ -31,13 +32,16 @@ namespace VepsPlusApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFuelRecord([FromBody] FuelRecord request)
         {
+            if (request == null || request.UserId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
             if (request.Volume <= 0 || request.Cost <= 0 || request.Mileage <= 0 || string.IsNullOrWhiteSpace(request.FuelType))
             {
                 return BadRequest("Некорректные данные заправки");
             }
 
-            // TODO: Получить UserId из JWT-токена
-            request.UserId = 1; // Заглушка для теста
             request.CreatedAt = DateTime.UtcNow;
 
             _dbContext.FuelRecords.Add(request);
@@ -46,15 +50,20 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateFuelRecord(int id, [FromBody] FuelRecord update)
+        public async Task<IActionResult> UpdateFuelRecord(int id, [FromQuery] int userId, [FromBody] FuelRecord update)
         {
-            var record = await _dbContext.FuelRecords.FindAsync(id);
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
+            var record = await _dbContext.FuelRecords
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
             if (record == null)
             {
                 return NotFound("Заправка не найдена");
             }
 
-            // TODO: Проверить, что UserId из токена соответствует record.UserId
             if (update.Date != default) record.Date = update.Date;
             if (update.Volume > 0) record.Volume = update.Volume;
             if (update.Cost > 0) record.Cost = update.Cost;
@@ -66,15 +75,20 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFuelRecord(int id)
+        public async Task<IActionResult> DeleteFuelRecord(int id, [FromQuery] int userId)
         {
-            var record = await _dbContext.FuelRecords.FindAsync(id);
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
+            var record = await _dbContext.FuelRecords
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
             if (record == null)
             {
                 return NotFound("Заправка не найдена");
             }
 
-            // TODO: Проверить, что UserId из токена соответствует record.UserId
             _dbContext.FuelRecords.Remove(record);
             await _dbContext.SaveChangesAsync();
             return Ok(new { message = "Заправка удалена" });

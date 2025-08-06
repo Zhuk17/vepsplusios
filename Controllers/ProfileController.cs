@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
@@ -7,7 +6,6 @@ namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/profile")]
     [ApiController]
-    [Authorize]
     public class ProfileController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -18,9 +16,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProfile()
+        public async Task<IActionResult> GetProfile([FromQuery] int userId)
         {
-            var userId = 1;
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
             var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (profile == null)
             {
@@ -30,9 +32,18 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateProfile([FromBody] Profile update)
+        public async Task<IActionResult> UpdateProfile([FromQuery] int userId, [FromBody] Profile update)
         {
-            var userId = 1; // Заглушка
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID");
+            }
+
+            if (update == null)
+            {
+                return BadRequest("Invalid request body");
+            }
+
             var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (profile == null)
             {
