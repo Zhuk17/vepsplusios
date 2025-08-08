@@ -2,10 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
-using VepsPlusApi.Models;
+using VepsPlusApi.Models; // Для Settings, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
 
 namespace VepsPlusApi.Controllers
 {
+    // Универсальные модели ответа (находятся в VepsPlusApi/Models/ApiResponses.cs)
+    // public class ApiResponse<T> { ... }
+    // public class ApiResponse { ... }
+
     [Route("api/v1/settings")]
     [ApiController]
     public class SettingsController : ControllerBase
@@ -22,15 +26,25 @@ namespace VepsPlusApi.Controllers
         {
             if (userId <= 0)
             {
-                return BadRequest("Invalid user ID");
+                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
             }
 
-            var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (settings == null)
+            try
             {
-                return NotFound("Настройки не найдены");
+                var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
+                if (settings == null)
+                {
+                    // Если настроек нет, можем вернуть "Не найдено" или пустые дефолтные настройки
+                    // Для удобства пользователя, лучше вернуть дефолтные
+                    return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = new Settings { UserId = userId, DarkTheme = true, PushNotifications = true, Language = "ru", UpdatedAt = DateTime.UtcNow }, Message = "Настройки не найдены, возвращены стандартные." });
+                }
+                return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = settings, Message = "Настройки успешно загружены." });
             }
-            return Ok(settings);
+            catch (Exception ex)
+            {
+                // Логирование ошибки
+                return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
+            }
         }
 
         [HttpPut]
@@ -38,23 +52,40 @@ namespace VepsPlusApi.Controllers
         {
             if (userId <= 0)
             {
-                return BadRequest("Invalid user ID");
+                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
             }
-
-            var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (settings == null)
+            if (update == null)
             {
-                settings = new Settings { UserId = userId, UpdatedAt = DateTime.UtcNow };
-                _dbContext.Settings.Add(settings);
+                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный запрос: тело запроса пусто." });
             }
 
-            settings.DarkTheme = update.DarkTheme;
-            settings.PushNotifications = update.PushNotifications;
-            settings.Language = update.Language ?? settings.Language;
-            settings.UpdatedAt = DateTime.UtcNow;
+            try
+            {
+                var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
+                bool isNewSettings = (settings == null);
 
-            await _dbContext.SaveChangesAsync();
-            return Ok(settings);
+                if (isNewSettings)
+                {
+                    settings = new Settings { UserId = userId };
+                    _dbContext.Settings.Add(settings);
+                }
+
+                // Обновление всех полей, так как это PUT (ожидается полный объект)
+                settings.DarkTheme = update.DarkTheme;
+                settings.PushNotifications = update.PushNotifications;
+                settings.Language = update.Language ?? settings.Language; // В случае, если Language может прийти null
+                settings.UpdatedAt = DateTime.UtcNow;
+
+                await _dbContext.SaveChangesAsync();
+
+                string message = isNewSettings ? "Настройки успешно созданы." : "Настройки успешно обновлены.";
+                return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = settings, Message = message });
+            }
+            catch (Exception ex)
+            {
+                // Логирование ошибки
+                return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
+            }
         }
     }
 }
