@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
+using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+using System.Security.Claims; // Added for ClaimTypes
 
 namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/dashboard")]
     [ApiController]
+    [Authorize] // Added [Authorize] attribute
     public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -16,11 +19,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDashboard([FromQuery] int userId)
+        public async Task<IActionResult> GetDashboard()
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest("Invalid user ID");
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             var totalHours = await _dbContext.Timesheets

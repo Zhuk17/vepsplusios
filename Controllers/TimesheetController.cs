@@ -5,6 +5,8 @@ using System.Collections.Generic; // Для List
 using System.Linq;
 using System.Threading.Tasks;
 using VepsPlusApi.Models; // Для Timesheet, User, AppDbContext, ApiResponse/ApiResponse<T>
+using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+using System.Security.Claims; // Added for ClaimTypes
 
 namespace VepsPlusApi.Controllers
 {
@@ -23,6 +25,7 @@ namespace VepsPlusApi.Controllers
 
     [Route("api/v1/timesheet")]
     [ApiController]
+    [Authorize] // Added [Authorize] attribute
     public class TimesheetController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -34,16 +37,17 @@ namespace VepsPlusApi.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetTimesheets(
-            [FromQuery] int userId,
             [FromQuery] string startDate,
             [FromQuery] string endDate,
             [FromQuery] string worker, // Имя пользователя (Fio)
             [FromQuery] string project,
             [FromQuery] string status)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
@@ -110,11 +114,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTimesheet([FromQuery] int userId, [FromBody] Timesheet request)
+        public async Task<IActionResult> AddTimesheet([FromBody] Timesheet request)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена и устанавливаем его
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             if (request == null || request.Hours <= 0 || string.IsNullOrWhiteSpace(request.Project))
@@ -152,11 +158,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateTimesheet(int id, [FromQuery] int userId, [FromBody] Timesheet update)
+        public async Task<IActionResult> UpdateTimesheet(int id, [FromBody] Timesheet update)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try

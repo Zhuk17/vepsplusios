@@ -5,6 +5,9 @@ using System.Text.Json;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using System.Security.Claims; // Added for JWT
+using Microsoft.IdentityModel.Tokens; // Added for SymmetricSecurityKey
+using System.IdentityModel.Tokens.Jwt; // Added for JwtSecurityTokenHandler
 
 namespace VepsPlusApi.Controllers
 {
@@ -78,15 +81,39 @@ namespace VepsPlusApi.Controllers
                     });
                 }
 
-                // !!! КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: ВОЗВРАЩАЕМ ApiResponse<LoginResponseData> !!!
-                return Ok(new ApiResponse<LoginResponseData>
+                // ИСПРАВЛЕНИЕ: Генерируем JWT токен
+                var claims = new List<Claim>
                 {
-                    IsSuccess = true, // Заметьте, IsSuccess (PascalCase)
-                    Data = new LoginResponseData // ВОТ ОН, ОБЪЕКТ ДАННЫХ!
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, user.Role)
+                };
+
+                // Используем тот же ключ, что и в Program.cs (для простоты)
+                // В продакшене лучше получать из конфигурации
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_for_jwt_development_purposes_only"));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: null, // No issuer for simplicity in development
+                    audience: null, // No audience for simplicity in development
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(7), // Token valid for 7 days
+                    signingCredentials: creds
+                );
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                // !!! КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: ВОЗВРАЩАЕМ ApiResponse<AuthSuccessResponse> с токеном!!!
+                return Ok(new ApiResponse<AuthSuccessResponse>
+                {
+                    IsSuccess = true,
+                    Data = new AuthSuccessResponse
                     {
                         UserId = user.Id,
                         Username = user.Username,
-                        Role = user.Role
+                        Role = user.Role,
+                        Token = tokenString // Возвращаем JWT токен
                     },
                     Message = "Вход успешно выполнен."
                 });
@@ -116,6 +143,15 @@ namespace VepsPlusApi.Controllers
     {
         public string Username { get; set; }
         public string Password { get; set; }
+    }
+
+    // Новый класс для успешного ответа аутентификации, включает токен
+    public class AuthSuccessResponse
+    {
+        public int UserId { get; set; }
+        public string Username { get; set; }
+        public string Role { get; set; }
+        public string Token { get; set; }
     }
     // Класс LoginResponse Data теперь должен быть определен в VepsPlusApi/Models/LoginResponseData.cs
     // и использоваться здесь через using VepsPlusApi.Models;

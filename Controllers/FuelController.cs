@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models; // Убедитесь, что FuelRecord и AppDbContext здесь
+using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+using System.Security.Claims; // Added for ClaimTypes
 
 namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/fuel")]
     [ApiController]
+    [Authorize] // Added [Authorize] attribute
     public class FuelController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -16,11 +19,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFuelRecords([FromQuery] int userId)
+        public async Task<IActionResult> GetFuelRecords()
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
@@ -40,17 +45,19 @@ namespace VepsPlusApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFuelRecord([FromBody] FuelRecord request)
         {
-            // Note: Request.UserId будет 0, если не передан или не соответствует типу.
-            // Проверка на request.UserId <= 0 должна быть адекватной для этого.
-            if (request == null || request.UserId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена и устанавливаем его
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя или пустой запрос." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
-            if (request.Volume <= 0 || request.Cost <= 0 || request.Mileage <= 0 || string.IsNullOrWhiteSpace(request.FuelType))
+            if (request == null || request.Volume <= 0 || request.Cost <= 0 || request.Mileage <= 0 || string.IsNullOrWhiteSpace(request.FuelType))
             {
                 return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректные данные заправки. Проверьте объем, стоимость, пробег и тип топлива." });
             }
+
+            request.UserId = userId; // Устанавливаем UserId из токена, а не из запроса
 
             try
             {
@@ -67,17 +74,19 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateFuelRecord(int id, [FromQuery] int userId, [FromBody] FuelRecord update)
+        public async Task<IActionResult> UpdateFuelRecord(int id, [FromBody] FuelRecord update)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
             {
                 var record = await _dbContext.FuelRecords
-                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId); // Проверяем принадлежность записи пользователю
                 if (record == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Заправка не найдена." });
@@ -101,17 +110,19 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFuelRecord(int id, [FromQuery] int userId)
+        public async Task<IActionResult> DeleteFuelRecord(int id)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
             {
                 var record = await _dbContext.FuelRecords
-                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId); // Проверяем принадлежность записи пользователю
                 if (record == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Заправка не найдена." });

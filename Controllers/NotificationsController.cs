@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models; // Для Notification, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
+using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+using System.Security.Claims; // Added for ClaimTypes
 
 namespace VepsPlusApi.Controllers
 {
@@ -10,6 +12,7 @@ namespace VepsPlusApi.Controllers
 
     [Route("api/v1/notifications")]
     [ApiController]
+    [Authorize] // Added [Authorize] attribute
     public class NotificationsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -20,11 +23,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetNotifications([FromQuery] int userId)
+        public async Task<IActionResult> GetNotifications()
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
@@ -42,17 +47,19 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> MarkAsRead(int id, [FromQuery] int userId)
+        public async Task<IActionResult> MarkAsRead(int id)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
             {
                 var notification = await _dbContext.Notifications
-                    .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+                    .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId); // Проверяем принадлежность уведомления пользователю
                 if (notification == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Уведомление не найдено." });

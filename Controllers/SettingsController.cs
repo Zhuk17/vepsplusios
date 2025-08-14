@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using VepsPlusApi.Models; // Для Settings, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
+using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+using System.Security.Claims; // Added for ClaimTypes
 
 namespace VepsPlusApi.Controllers
 {
@@ -12,6 +14,7 @@ namespace VepsPlusApi.Controllers
 
     [Route("api/v1/settings")]
     [ApiController]
+    [Authorize] // Added [Authorize] attribute
     public class SettingsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -22,11 +25,13 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSettings([FromQuery] int userId)
+        public async Task<IActionResult> GetSettings()
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
             try
@@ -48,12 +53,15 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateSettings([FromQuery] int userId, [FromBody] Settings update)
+        public async Task<IActionResult> UpdateSettings([FromBody] Settings update)
         {
-            if (userId <= 0)
+            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный ID пользователя." });
+                return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
+
             if (update == null)
             {
                 return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректный запрос: тело запроса пусто." });
