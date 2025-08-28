@@ -25,6 +25,7 @@ namespace VepsPlusApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            var stopwatch = Stopwatch.StartNew(); // Start stopwatch for Login method
             try
             {
                 if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
@@ -39,6 +40,9 @@ namespace VepsPlusApi.Controllers
 
                 var user = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Username == request.Username);
+                long dbQueryTime = stopwatch.ElapsedMilliseconds;
+                Debug.WriteLine($"[AuthController] DB Query (FirstOrDefaultAsync) Duration: {dbQueryTime} ms");
+
                 if (user == null)
                 {
                     return Unauthorized(new ApiResponse // Используем ApiResponse
@@ -79,6 +83,8 @@ namespace VepsPlusApi.Controllers
                 );
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                long jwtGenerationTime = stopwatch.ElapsedMilliseconds - dbQueryTime; // Time for JWT generation
+                Debug.WriteLine($"[AuthController] JWT Generation Duration: {jwtGenerationTime} ms");
 
                 // !!! КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: ВОЗВРАЩАЕМ ApiResponse<AuthSuccessResponse> с токеном!!!
                 return Ok(new ApiResponse<AuthSuccessResponse>
@@ -111,6 +117,63 @@ namespace VepsPlusApi.Controllers
                     IsSuccess = false,
                     Message = $"Внутренняя ошибка сервера: {ex.Message}. Пожалуйста, попробуйте позже."
                 });
+            }
+            finally
+            {
+                stopwatch.Stop(); // Stop stopwatch for Login method
+                Debug.WriteLine($"[AuthController] Total Login Method Duration: {stopwatch.ElapsedMilliseconds} ms"); // Log total duration
+            }
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword))
+                {
+                    return BadRequest(new ApiResponse { IsSuccess = false, Message = "Неверный запрос: текущий или новый пароль пусты." });
+                }
+
+                // Получаем userId из JWT токена
+                var userIdClaim = HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
+                }
+
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, Message = "Пользователь не найден." });
+                }
+
+                // Проверяем текущий пароль (ИГНОРИРУЕМ ПРОБЛЕМЫ БЕЗОПАСНОСТИ, КАК ЗАПРОШЕНО)
+                if (user.Password != request.CurrentPassword)
+                {
+                    return BadRequest(new ApiResponse { IsSuccess = false, Message = "Текущий пароль неверный." });
+                }
+
+                // Обновляем пароль (ИГНОРИРУЕМ ПРОБЛЕМЫ БЕЗОПАСНОСТИ, КАК ЗАПРОШЕНО)
+                user.Password = request.NewPassword;
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(new ApiResponse { IsSuccess = true, Message = "Пароль успешно изменен." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка в AuthController.ChangePassword: {ex.Message} - {ex.InnerException?.Message}");
+                return StatusCode(500, new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Внутренняя ошибка сервера: {ex.Message}. Пожалуйста, попробуйте позже."
+                });
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Debug.WriteLine($"[AuthController] Total ChangePassword Method Duration: {stopwatch.ElapsedMilliseconds} ms");
             }
         }
     }
