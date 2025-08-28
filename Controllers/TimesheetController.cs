@@ -25,7 +25,7 @@ namespace VepsPlusApi.Controllers
         public DateTime Date { get; set; }
     }
 
-    [Route("api/v1/timesheet")]
+    [Route("api/v1/timesheets")]
     [ApiController]
     [Authorize] // Added [Authorize] attribute - Вернул обратно, так как проблема не в нем
     public class TimesheetController : ControllerBase
@@ -161,17 +161,20 @@ namespace VepsPlusApi.Controllers
                 _dbContext.Timesheets.Add(request);
                 await _dbContext.SaveChangesAsync();
 
-                var user = await _dbContext.Users.FindAsync(request.UserId);
+                var createdTimesheet = await _dbContext.Timesheets
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.Id == request.Id);
+
                 var responseDto = new TimesheetResponseDto // Проецируем в DTO
                 {
-                    Id = request.Id,
-                    Fio = user?.Username,
-                    Project = request.Project,
-                    Hours = request.Hours,
-                    BusinessTrip = request.BusinessTrip,
-                    Comment = request.Comment,
-                    Status = request.Status,
-                    Date = request.Date
+                    Id = createdTimesheet.Id,
+                    Fio = createdTimesheet.User?.Username, // Используем Username из загруженного пользователя
+                    Project = createdTimesheet.Project,
+                    Hours = createdTimesheet.Hours,
+                    BusinessTrip = createdTimesheet.BusinessTrip,
+                    Comment = createdTimesheet.Comment,
+                    Status = createdTimesheet.Status,
+                    Date = createdTimesheet.Date
                 };
                 return Ok(new ApiResponse<TimesheetResponseDto> { IsSuccess = true, Data = responseDto, Message = "Табель успешно добавлен." });
             }
@@ -209,17 +212,20 @@ namespace VepsPlusApi.Controllers
 
                 await _dbContext.SaveChangesAsync();
 
-                var user = await _dbContext.Users.FindAsync(timesheet.UserId);
+                var updatedTimesheet = await _dbContext.Timesheets
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.Id == timesheet.Id);
+
                 var responseDto = new TimesheetResponseDto // Проецируем в DTO
                 {
-                    Id = timesheet.Id,
-                    Fio = user?.Username,
-                    Project = timesheet.Project,
-                    Hours = timesheet.Hours,
-                    BusinessTrip = timesheet.BusinessTrip,
-                    Comment = timesheet.Comment,
-                    Status = timesheet.Status,
-                    Date = timesheet.Date
+                    Id = updatedTimesheet.Id,
+                    Fio = updatedTimesheet.User?.Username, // Используем Username из загруженного пользователя
+                    Project = updatedTimesheet.Project,
+                    Hours = updatedTimesheet.Hours,
+                    BusinessTrip = updatedTimesheet.BusinessTrip,
+                    Comment = updatedTimesheet.Comment,
+                    Status = updatedTimesheet.Status,
+                    Date = updatedTimesheet.Date
                 };
                 return Ok(new ApiResponse<TimesheetResponseDto> { IsSuccess = true, Data = responseDto, Message = "Табель успешно обновлен." });
             }

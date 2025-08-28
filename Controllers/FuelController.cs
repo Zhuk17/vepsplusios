@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models; // Убедитесь, что FuelRecord и AppDbContext здесь
 using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
 using System.Security.Claims; // Added for ClaimTypes
+using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
 
 namespace VepsPlusApi.Controllers
 {
@@ -21,9 +22,8 @@ namespace VepsPlusApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetFuelRecords()
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -45,9 +45,8 @@ namespace VepsPlusApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFuelRecord([FromBody] FuelRecord request)
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена и устанавливаем его
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -69,7 +68,7 @@ namespace VepsPlusApi.Controllers
                 return BadRequest(new ApiResponse { IsSuccess = false, Message = $"Пробег ({request.Mileage} км) не может быть меньше предыдущего зафиксированного пробега ({lastFuelRecord.Mileage} км)." });
             }
 
-            request.UserId = userId; // Устанавливаем UserId из токена, а не из запроса
+            request.UserId = userId.Value; // Устанавливаем UserId из токена, а не из запроса
 
             try
             {
@@ -88,9 +87,8 @@ namespace VepsPlusApi.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateFuelRecord(int id, [FromBody] FuelRecord update)
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -144,9 +142,8 @@ namespace VepsPlusApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFuelRecord(int id)
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }

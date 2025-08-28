@@ -4,6 +4,7 @@ using VepsPlusApi.Models; // Добавляем using для Profile, AppDbConte
 using System;
 using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
 using System.Security.Claims; // Added for ClaimTypes
+using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
 
 namespace VepsPlusApi.Controllers
 {
@@ -22,9 +23,8 @@ namespace VepsPlusApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProfile()
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -48,9 +48,8 @@ namespace VepsPlusApi.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateProfile([FromBody] Profile update)
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -65,7 +64,7 @@ namespace VepsPlusApi.Controllers
                 var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
                 if (profile == null)
                 {
-                    profile = new Profile { UserId = userId };
+                    profile = new Profile { UserId = userId.Value };
                     _dbContext.Profiles.Add(profile);
                 }
 

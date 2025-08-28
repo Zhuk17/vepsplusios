@@ -11,18 +11,6 @@ using System.IdentityModel.Tokens.Jwt; // Added for JwtSecurityTokenHandler
 
 namespace VepsPlusApi.Controllers
 {
-    // !!! УДАЛИТЬ КЛАСС LoginResponse ИЗ ЭТОГО ФАЙЛА !!!
-    /*
-    public class LoginResponse
-    {
-        public bool isSuccess { get; set; }
-        public int userId { get; set; }
-        public string username { get; set; }
-        public string role { get; set; }
-        public string message { get; set; }
-    }
-    */
-
     [Route("api/v1/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -35,22 +23,10 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login() // Теперь метод не принимает [FromBody] LoginRequest напрямую
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            string requestBody = "";
             try
             {
-                Request.EnableBuffering();
-                using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
-                {
-                    requestBody = await reader.ReadToEndAsync();
-                    Debug.WriteLine($"[DEBUG SERVER] AuthController received RAW Request Body: {requestBody}");
-                }
-                Request.Body.Position = 0;
-
-                var request = JsonSerializer.Deserialize<LoginRequest>(requestBody,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
                 if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
                 {
                     Debug.WriteLine($"[DEBUG SERVER] LoginRequest after manual deserialization: Username='{request?.Username}', Password='{request?.Password}'");
@@ -120,7 +96,7 @@ namespace VepsPlusApi.Controllers
             }
             catch (JsonException ex)
             {
-                Debug.WriteLine($"[DEBUG SERVER] JSON Deserialization Error: {ex.Message} - Raw Body: {requestBody}");
+                Debug.WriteLine($"[DEBUG SERVER] JSON Deserialization Error: {ex.Message}");
                 return BadRequest(new ApiResponse
                 {
                     IsSuccess = false,
@@ -139,20 +115,6 @@ namespace VepsPlusApi.Controllers
         }
     }
 
-    public class LoginRequest
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
-
-    // Новый класс для успешного ответа аутентификации, включает токен
-    public class AuthSuccessResponse
-    {
-        public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Role { get; set; }
-        public string Token { get; set; }
-    }
     // Класс LoginResponse Data теперь должен быть определен в VepsPlusApi/Models/LoginResponseData.cs
     // и использоваться здесь через using VepsPlusApi.Models;
 }

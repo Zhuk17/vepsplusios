@@ -1,3 +1,5 @@
+using System;
+
 namespace VepsPlusApi.Models
 {
     public class LoginRequest

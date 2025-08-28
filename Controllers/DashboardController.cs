@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
 using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
 using System.Security.Claims; // Added for ClaimTypes
+using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
 
 namespace VepsPlusApi.Controllers
 {
@@ -21,32 +22,35 @@ namespace VepsPlusApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDashboard()
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
-            var totalHours = await _dbContext.Timesheets
-                .Where(t => t.UserId == userId)
-                .SumAsync(t => t.Hours);
-            var totalFuelCost = await _dbContext.FuelRecords
-                .Where(f => f.UserId == userId)
-                .SumAsync(f => f.Cost);
-            var totalMileage = await _dbContext.FuelRecords
-                .Where(f => f.UserId == userId)
-                .SumAsync(f => f.Mileage);
-            var unreadNotifications = await _dbContext.Notifications
-                .Where(n => n.UserId == userId && !n.IsRead)
-                .CountAsync();
+            var dashboardData = await _dbContext.Users // Начинаем с Users, чтобы гарантировать, что userId существует
+                .Where(u => u.Id == userId)
+                .Select(u => new
+                {
+                    TotalHours = _dbContext.Timesheets.Where(t => t.UserId == userId).Sum(t => t.Hours),
+                    TotalFuelCost = _dbContext.FuelRecords.Where(f => f.UserId == userId).Sum(f => f.Cost),
+                    TotalMileage = _dbContext.FuelRecords.Where(f => f.UserId == userId).Sum(f => f.Mileage),
+                    UnreadNotifications = _dbContext.Notifications.Where(n => n.UserId == userId && !n.IsRead).Count()
+                })
+                .FirstOrDefaultAsync();
+
+            if (dashboardData == null)
+            {
+                // Если пользователь не найден (хотя GetUserId() уже проверил), или нет данных
+                return NotFound(new ApiResponse { IsSuccess = false, Message = "Данные для дашборда не найдены." });
+            }
 
             return Ok(new Dashboard
             {
-                TotalHours = totalHours,
-                TotalFuelCost = totalFuelCost,
-                TotalMileage = totalMileage,
-                UnreadNotifications = unreadNotifications
+                TotalHours = dashboardData.TotalHours,
+                TotalFuelCost = dashboardData.TotalFuelCost,
+                TotalMileage = dashboardData.TotalMileage,
+                UnreadNotifications = dashboardData.UnreadNotifications
             });
         }
     }

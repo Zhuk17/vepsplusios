@@ -42,6 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_for_jwt_development_purposes_only")) // !!! ЗАМЕНИТЕ ЭТОТ КЛЮЧ НА БЕЗОПАСНЫЙ В appsettings.json В ПРОДАКШЕНЕ !!!
         };
+
     });
 
 builder.Services.AddAuthorization(); // Добавляем сервисы авторизации

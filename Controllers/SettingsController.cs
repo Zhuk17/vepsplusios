@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using VepsPlusApi.Models; // Для Settings, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
 using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
 using System.Security.Claims; // Added for ClaimTypes
+using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
 
 namespace VepsPlusApi.Controllers
 {
@@ -27,9 +28,8 @@ namespace VepsPlusApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSettings()
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -41,7 +41,7 @@ namespace VepsPlusApi.Controllers
                 {
                     // Если настроек нет, можем вернуть "Не найдено" или пустые дефолтные настройки
                     // Для удобства пользователя, лучше вернуть дефолтные
-                    return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = new Settings { UserId = userId, DarkTheme = true, PushNotifications = true, Language = "ru", UpdatedAt = DateTime.UtcNow }, Message = "Настройки не найдены, возвращены стандартные." });
+                    return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = new Settings { UserId = userId.Value, DarkTheme = true, PushNotifications = true, Language = "ru", UpdatedAt = DateTime.UtcNow }, Message = "Настройки не найдены, возвращены стандартные." });
                 }
                 return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = settings, Message = "Настройки успешно загружены." });
             }
@@ -55,9 +55,8 @@ namespace VepsPlusApi.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateSettings([FromBody] Settings update)
         {
-            // ИСПРАВЛЕНИЕ: Получаем userId из JWT токена
-            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            var userId = this.GetUserId();
+            if (userId == null)
             {
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
@@ -74,7 +73,7 @@ namespace VepsPlusApi.Controllers
 
                 if (isNewSettings)
                 {
-                    settings = new Settings { UserId = userId };
+                    settings = new Settings { UserId = userId.Value };
                     _dbContext.Settings.Add(settings);
                 }
 
