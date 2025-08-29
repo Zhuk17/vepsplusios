@@ -1,19 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using VepsPlusApi.Models; // Для Notification, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
-using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
-using System.Security.Claims; // Added for ClaimTypes
-using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
+using VepsPlusApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using VepsPlusApi.Extensions;
 
 namespace VepsPlusApi.Controllers
 {
-    // Универсальные модели ответа (находятся в VepsPlusApi/Models/ApiResponses.cs)
-    // public class ApiResponse<T> { ... }
-    // public class ApiResponse { ... }
-
     [Route("api/v1/notifications")]
     [ApiController]
-    [Authorize] // Added [Authorize] attribute
+    [Authorize]
     public class NotificationsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -41,7 +37,6 @@ namespace VepsPlusApi.Controllers
             }
             catch (Exception ex)
             {
-                // Логирование ошибки
                 return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
             }
         }
@@ -58,7 +53,7 @@ namespace VepsPlusApi.Controllers
             try
             {
                 var notification = await _dbContext.Notifications
-                    .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId); // Проверяем принадлежность уведомления пользователю
+                    .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
                 if (notification == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Уведомление не найдено." });
@@ -70,7 +65,6 @@ namespace VepsPlusApi.Controllers
             }
             catch (Exception ex)
             {
-                // Логирование ошибки
                 return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
             }
         }

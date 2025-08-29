@@ -2,20 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
-using VepsPlusApi.Models; // Для Settings, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
-using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
-using System.Security.Claims; // Added for ClaimTypes
-using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
+using VepsPlusApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using VepsPlusApi.Extensions;
 
 namespace VepsPlusApi.Controllers
 {
-    // Универсальные модели ответа (находятся в VepsPlusApi/Models/ApiResponses.cs)
-    // public class ApiResponse<T> { ... }
-    // public class ApiResponse { ... }
-
     [Route("api/v1/settings")]
     [ApiController]
-    [Authorize] // Added [Authorize] attribute
+    [Authorize]
     public class SettingsController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -39,15 +35,12 @@ namespace VepsPlusApi.Controllers
                 var settings = await _dbContext.Settings.FirstOrDefaultAsync(s => s.UserId == userId);
                 if (settings == null)
                 {
-                    // Если настроек нет, можем вернуть "Не найдено" или пустые дефолтные настройки
-                    // Для удобства пользователя, лучше вернуть дефолтные
                     return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = new Settings { UserId = userId.Value, DarkTheme = true, PushNotifications = true, Language = "ru", UpdatedAt = DateTime.UtcNow }, Message = "Настройки не найдены, возвращены стандартные." });
                 }
                 return Ok(new ApiResponse<Settings> { IsSuccess = true, Data = settings, Message = "Настройки успешно загружены." });
             }
             catch (Exception ex)
             {
-                // Логирование ошибки
                 return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
             }
         }
@@ -77,10 +70,9 @@ namespace VepsPlusApi.Controllers
                     _dbContext.Settings.Add(settings);
                 }
 
-                // Обновление всех полей, так как это PUT (ожидается полный объект)
                 settings.DarkTheme = update.DarkTheme;
                 settings.PushNotifications = update.PushNotifications;
-                settings.Language = update.Language ?? settings.Language; // В случае, если Language может прийти null
+                settings.Language = update.Language ?? settings.Language;
                 settings.UpdatedAt = DateTime.UtcNow;
 
                 await _dbContext.SaveChangesAsync();
@@ -90,7 +82,6 @@ namespace VepsPlusApi.Controllers
             }
             catch (Exception ex)
             {
-                // Логирование ошибки
                 return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
             }
         }

@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VepsPlusApi.Models;
-using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
-using System.Security.Claims; // Added for ClaimTypes
-using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using VepsPlusApi.Extensions;
 
 namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/dashboard")]
     [ApiController]
-    [Authorize] // Added [Authorize] attribute
+    [Authorize]
     public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -28,7 +28,7 @@ namespace VepsPlusApi.Controllers
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
-            var dashboardData = await _dbContext.Users // Начинаем с Users, чтобы гарантировать, что userId существует
+            var dashboardData = await _dbContext.Users
                 .Where(u => u.Id == userId)
                 .Select(u => new
                 {
@@ -41,7 +41,6 @@ namespace VepsPlusApi.Controllers
 
             if (dashboardData == null)
             {
-                // Если пользователь не найден (хотя GetUserId() уже проверил), или нет данных
                 return NotFound(new ApiResponse { IsSuccess = false, Message = "Данные для дашборда не найдены." });
             }
 

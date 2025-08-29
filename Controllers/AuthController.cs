@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using VepsPlusApi.Models; // Теперь этот using дает доступ к ApiResponses.cs и LoginResponseData
+using VepsPlusApi.Models;
 using System.Text.Json;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
-using System.Security.Claims; // Added for JWT
-using Microsoft.IdentityModel.Tokens; // Added for SymmetricSecurityKey
-using System.IdentityModel.Tokens.Jwt; // Added for JwtSecurityTokenHandler
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace VepsPlusApi.Controllers
 {
@@ -25,15 +25,15 @@ namespace VepsPlusApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var stopwatch = Stopwatch.StartNew(); // Start stopwatch for Login method
+            var stopwatch = Stopwatch.StartNew();
             try
             {
                 if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
                 {
                     Debug.WriteLine($"[DEBUG SERVER] LoginRequest after manual deserialization: Username='{request?.Username}', Password='{request?.Password}'");
-                    return BadRequest(new ApiResponse // Теперь используем ApiResponse для ошибок
+                    return BadRequest(new ApiResponse
                     {
-                        IsSuccess = false, // Заметьте, IsSuccess (PascalCase)
+                        IsSuccess = false,
                         Message = "Неверный запрос: имя пользователя или пароль пусты."
                     });
                 }
@@ -45,7 +45,7 @@ namespace VepsPlusApi.Controllers
 
                 if (user == null)
                 {
-                    return Unauthorized(new ApiResponse // Используем ApiResponse
+                    return Unauthorized(new ApiResponse
                     {
                         IsSuccess = false,
                         Message = "Пользователь не найден."
@@ -54,14 +54,13 @@ namespace VepsPlusApi.Controllers
 
                 if (user.Password != request.Password)
                 {
-                    return Unauthorized(new ApiResponse // Используем ApiResponse
+                    return Unauthorized(new ApiResponse
                     {
                         IsSuccess = false,
                         Message = "Неверный пароль."
                     });
                 }
 
-                // ИСПРАВЛЕНИЕ: Генерируем JWT токен
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -69,24 +68,21 @@ namespace VepsPlusApi.Controllers
                     new Claim(ClaimTypes.Role, user.Role)
                 };
 
-                // Используем тот же ключ, что и в Program.cs (для простоты)
-                // В продакшене лучше получать из конфигурации
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_for_jwt_development_purposes_only"));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
-                    issuer: null, // No issuer for simplicity in development
-                    audience: null, // No audience for simplicity in development
+                    issuer: null,
+                    audience: null,
                     claims: claims,
-                    expires: DateTime.Now.AddDays(7), // Token valid for 7 days
+                    expires: DateTime.Now.AddDays(7),
                     signingCredentials: creds
                 );
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-                long jwtGenerationTime = stopwatch.ElapsedMilliseconds - dbQueryTime; // Time for JWT generation
+                long jwtGenerationTime = stopwatch.ElapsedMilliseconds - dbQueryTime;
                 Debug.WriteLine($"[AuthController] JWT Generation Duration: {jwtGenerationTime} ms");
 
-                // !!! КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: ВОЗВРАЩАЕМ ApiResponse<AuthSuccessResponse> с токеном!!!
                 return Ok(new ApiResponse<AuthSuccessResponse>
                 {
                     IsSuccess = true,
@@ -95,7 +91,7 @@ namespace VepsPlusApi.Controllers
                         UserId = user.Id,
                         Username = user.Username,
                         Role = user.Role,
-                        Token = tokenString // Возвращаем JWT токен
+                        Token = tokenString
                     },
                     Message = "Вход успешно выполнен."
                 });
@@ -120,8 +116,8 @@ namespace VepsPlusApi.Controllers
             }
             finally
             {
-                stopwatch.Stop(); // Stop stopwatch for Login method
-                Debug.WriteLine($"[AuthController] Total Login Method Duration: {stopwatch.ElapsedMilliseconds} ms"); // Log total duration
+                stopwatch.Stop();
+                Debug.WriteLine($"[AuthController] Total Login Method Duration: {stopwatch.ElapsedMilliseconds} ms");
             }
         }
 
@@ -136,7 +132,6 @@ namespace VepsPlusApi.Controllers
                     return BadRequest(new ApiResponse { IsSuccess = false, Message = "Неверный запрос: текущий или новый пароль пусты." });
                 }
 
-                // Получаем userId из JWT токена
                 var userIdClaim = HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
                 if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 {
@@ -177,8 +172,5 @@ namespace VepsPlusApi.Controllers
             }
         }
     }
-
-    // Класс LoginResponse Data теперь должен быть определен в VepsPlusApi/Models/LoginResponseData.cs
-    // и использоваться здесь через using VepsPlusApi.Models;
 }
 

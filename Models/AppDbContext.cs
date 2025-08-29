@@ -17,7 +17,6 @@ namespace VepsPlusApi.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Явное указание имён таблиц в верхнем регистре
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Timesheet>().ToTable("Timesheets");
             modelBuilder.Entity<FuelRecord>().ToTable("FuelRecords");
@@ -25,7 +24,6 @@ namespace VepsPlusApi.Models
             modelBuilder.Entity<Profile>().ToTable("Profiles");
             modelBuilder.Entity<Settings>().ToTable("Settings");
 
-            // Настройка ограничений и типов данных
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Username).HasMaxLength(50).IsRequired();

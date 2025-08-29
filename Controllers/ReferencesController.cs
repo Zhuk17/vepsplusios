@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using VepsPlusApi.Models;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace VepsPlusApi.Controllers
 {
@@ -9,11 +10,11 @@ namespace VepsPlusApi.Controllers
     [ApiController]
     public class ReferencesController : ControllerBase
     {
-        private readonly ILogger<ReferencesController> _logger; // ДОБАВЛЕНО: Для логирования
+        private readonly ILogger<ReferencesController> _logger;
 
         public ReferencesController(ILogger<ReferencesController> logger)
         {
-            _logger = logger; // ДОБАВЛЕНО: Инициализация логгера
+            _logger = logger;
         }
 
         [HttpGet("fueltypes")]

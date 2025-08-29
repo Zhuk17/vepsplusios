@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using VepsPlusApi.Models; // Добавляем using для Profile, AppDbContext, и теперь для ApiResponse/ApiResponse<T>
+using VepsPlusApi.Models;
 using System;
-using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
-using System.Security.Claims; // Added for ClaimTypes
-using VepsPlusApi.Extensions; // ДОБАВЛЕНО: Для GetUserId()
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using VepsPlusApi.Extensions;
 
 namespace VepsPlusApi.Controllers
 {
     [Route("api/v1/profile")]
     [ApiController]
-    [Authorize] // Added [Authorize] attribute
+    [Authorize]
     public class ProfileController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
@@ -40,7 +40,6 @@ namespace VepsPlusApi.Controllers
             }
             catch (Exception ex)
             {
-                // В реальном приложении здесь должно быть логирование ошибки
                 return StatusCode(500, new ApiResponse { IsSuccess = false, Message = $"Внутренняя ошибка сервера: {ex.Message}" });
             }
         }
@@ -68,7 +67,6 @@ namespace VepsPlusApi.Controllers
                     _dbContext.Profiles.Add(profile);
                 }
 
-                // Обновление полей. Если поле в update null, оно не меняется.
                 if (update.FullName != null) profile.FullName = update.FullName;
                 if (update.Email != null) profile.Email = update.Email;
                 if (update.Phone != null) profile.Phone = update.Phone;
