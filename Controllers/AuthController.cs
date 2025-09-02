@@ -144,13 +144,11 @@ namespace VepsPlusApi.Controllers
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Пользователь не найден." });
                 }
 
-                // Проверяем текущий пароль (ИГНОРИРУЕМ ПРОБЛЕМЫ БЕЗОПАСНОСТИ, КАК ЗАПРОШЕНО)
                 if (user.Password != request.CurrentPassword)
                 {
                     return BadRequest(new ApiResponse { IsSuccess = false, Message = "Текущий пароль неверный." });
                 }
 
-                // Обновляем пароль (ИГНОРИРУЕМ ПРОБЛЕМЫ БЕЗОПАСНОСТИ, КАК ЗАПРОШЕНО)
                 user.Password = request.NewPassword;
                 await _dbContext.SaveChangesAsync();
 
