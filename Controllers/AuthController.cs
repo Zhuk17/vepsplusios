@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens.Json; // ДОБАВЛЕНО для Base64UrlEncoder
 
 namespace VepsPlusApi.Controllers
 {
@@ -68,14 +69,14 @@ namespace VepsPlusApi.Controllers
                     new Claim(ClaimTypes.Role, user.Role)
                 };
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_for_jwt_development_purposes_only"));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("a_new_super_secret_key_for_jwt_development_purposes_only_and_it_is_longer_now"));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
                     issuer: null,
                     audience: null,
                     claims: claims,
-                    expires: DateTime.Now.AddDays(7),
+                    expires: DateTime.UtcNow.AddDays(30),
                     signingCredentials: creds
                 );
 

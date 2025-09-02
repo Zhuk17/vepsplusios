@@ -51,6 +51,7 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.Cost).HasPrecision(10, 2).IsRequired();
                 entity.Property(e => e.FuelType).HasMaxLength(50);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.CarModel).HasMaxLength(50);
                 entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId);
             });
 

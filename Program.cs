@@ -28,7 +28,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_for_jwt_development_purposes_only"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("a_new_super_secret_key_for_jwt_development_purposes_only_and_it_is_longer_now")),
+            RequireExpirationTime = true // Указываем, что токен должен содержать срок действия
         };
     });
 
