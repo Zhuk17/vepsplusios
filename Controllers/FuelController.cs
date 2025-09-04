@@ -20,7 +20,9 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFuelRecords()
+        public async Task<IActionResult> GetFuelRecords(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             var userId = this.GetUserId();
             if (userId == null)
@@ -30,10 +32,35 @@ namespace VepsPlusApi.Controllers
 
             try
             {
-                var records = await _dbContext.FuelRecords
+                var query = _dbContext.FuelRecords
+                    .Include(r => r.User).ThenInclude(u => u.Profile) // Включаем User и Profile для получения Fio
                     .Where(r => r.UserId == userId)
-                    .ToListAsync();
-                return Ok(new ApiResponse<List<FuelRecord>> { IsSuccess = true, Data = records, Message = "Заправки успешно загружены." });
+                    .AsQueryable();
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(r => r.Date.Date >= startDate.Value.ToUniversalTime().Date);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(r => r.Date.Date <= endDate.Value.ToUniversalTime().Date);
+                }
+
+                var records = await query.Select(r => new FuelRecordResponseDto
+                {
+                    Id = r.Id,
+                    Fio = r.User.Profile.FullName ?? r.User.Username ?? "Неизвестно",
+                    Date = r.Date,
+                    Volume = r.Volume,
+                    Cost = r.Cost,
+                    Mileage = r.Mileage,
+                    FuelType = r.FuelType,
+                    CarModel = r.CarModel,
+                    LicensePlate = r.LicensePlate,
+                    CreatedAt = r.CreatedAt
+                }).ToListAsync();
+                return Ok(new ApiResponse<List<FuelRecordResponseDto>> { IsSuccess = true, Data = records, Message = "Заправки успешно загружены." });
             }
             catch (Exception ex)
             {
@@ -42,7 +69,7 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFuelRecord([FromBody] FuelRecord request)
+        public async Task<IActionResult> AddFuelRecord([FromBody] FuelRecordCreateRequest request)
         {
             var userId = this.GetUserId();
             if (userId == null)
@@ -50,9 +77,9 @@ namespace VepsPlusApi.Controllers
                 return Unauthorized(new ApiResponse { IsSuccess = false, Message = "Пользователь не авторизован или User ID не найден в токене." });
             }
 
-            if (request == null || request.Volume <= 0 || request.Cost <= 0 || request.Mileage <= 0 || string.IsNullOrWhiteSpace(request.FuelType))
+            if (request == null || request.Volume <= 0 || request.Mileage <= 0 || string.IsNullOrWhiteSpace(request.FuelType) || string.IsNullOrWhiteSpace(request.LicensePlate))
             {
-                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректные данные заправки. Проверьте объем, стоимость, пробег и тип топлива." });
+                return BadRequest(new ApiResponse { IsSuccess = false, Message = "Некорректные данные заправки. Проверьте объем, пробег, тип топлива и гос. номер." });
             }
 
             var lastFuelRecord = await _dbContext.FuelRecords
@@ -66,14 +93,43 @@ namespace VepsPlusApi.Controllers
                 return BadRequest(new ApiResponse { IsSuccess = false, Message = $"Пробег ({request.Mileage} км) не может быть меньше предыдущего зафиксированного пробега ({lastFuelRecord.Mileage} км)." });
             }
 
-            request.UserId = userId.Value;
-
             try
             {
-                request.CreatedAt = DateTime.UtcNow;
-                _dbContext.FuelRecords.Add(request);
+                var newRecord = new FuelRecord
+                {
+                    UserId = userId.Value,
+                    Date = request.Date.ToUniversalTime(),
+                    Volume = request.Volume,
+                    Cost = request.Volume * 50m, // Стоимость рассчитывается на сервере
+                    Mileage = request.Mileage,
+                    FuelType = request.FuelType,
+                    CarModel = request.CarModel,
+                    LicensePlate = request.LicensePlate,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _dbContext.FuelRecords.Add(newRecord);
                 await _dbContext.SaveChangesAsync();
-                return Ok(new ApiResponse<FuelRecord> { IsSuccess = true, Data = request, Message = "Заправка успешно добавлена." });
+
+                // Получаем FullName из Profile для ответа
+                var userProfile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
+                var fio = userProfile?.FullName ?? _dbContext.Users.FirstOrDefault(u => u.Id == userId)?.Username ?? "Неизвестно";
+
+                var responseDto = new FuelRecordResponseDto
+                {
+                    Id = newRecord.Id,
+                    Fio = fio,
+                    Date = newRecord.Date,
+                    Volume = newRecord.Volume,
+                    Cost = newRecord.Cost,
+                    Mileage = newRecord.Mileage,
+                    FuelType = newRecord.FuelType,
+                    CarModel = newRecord.CarModel,
+                    LicensePlate = newRecord.LicensePlate,
+                    CreatedAt = newRecord.CreatedAt
+                };
+
+                return Ok(new ApiResponse<FuelRecordResponseDto> { IsSuccess = true, Data = responseDto, Message = "Заправка успешно добавлена." });
             }
             catch (Exception ex)
             {
@@ -82,7 +138,7 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateFuelRecord(int id, [FromBody] FuelRecord update)
+        public async Task<IActionResult> UpdateFuelRecord(int id, [FromBody] FuelRecordUpdateRequest update)
         {
             var userId = this.GetUserId();
             if (userId == null)
@@ -93,16 +149,25 @@ namespace VepsPlusApi.Controllers
             try
             {
                 var record = await _dbContext.FuelRecords
+                    .Include(r => r.User).ThenInclude(u => u.Profile)
                     .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
                 if (record == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = "Заправка не найдена." });
                 }
 
-                if (update.Date != default) record.Date = update.Date;
-                if (update.Volume > 0) record.Volume = update.Volume;
-                if (update.Cost > 0) record.Cost = update.Cost;
-                if (update.Mileage > 0)
+                if (update.Date.HasValue) record.Date = update.Date.Value.ToUniversalTime();
+                if (update.Volume.HasValue && update.Volume > 0)
+                {
+                    record.Volume = update.Volume.Value;
+                    record.Cost = update.Volume.Value * 50m; // Пересчитываем стоимость
+                }
+                else if (update.Volume.HasValue && update.Volume <= 0) // Если передали 0 или отрицательное, это ошибка
+                {
+                    return BadRequest(new ApiResponse { IsSuccess = false, Message = "Объем топлива должен быть положительным." });
+                }
+
+                if (update.Mileage.HasValue && update.Mileage > 0)
                 {
                     var previousRecord = await _dbContext.FuelRecords
                         .Where(r => r.UserId == userId && r.Id != id)
@@ -118,12 +183,38 @@ namespace VepsPlusApi.Controllers
                     {
                          return BadRequest(new ApiResponse { IsSuccess = false, Message = $"Обновленный пробег ({update.Mileage} км) не может быть меньше текущего пробега записи ({record.Mileage} км)." });
                     }
-                    record.Mileage = update.Mileage;
+                    record.Mileage = update.Mileage.Value;
                 }
+                else if (update.Mileage.HasValue && update.Mileage <= 0) // Если передали 0 или отрицательное, это ошибка
+                {
+                     return BadRequest(new ApiResponse { IsSuccess = false, Message = "Пробег должен быть положительным." });
+                }
+
                 if (!string.IsNullOrWhiteSpace(update.FuelType)) record.FuelType = update.FuelType;
+                if (!string.IsNullOrWhiteSpace(update.CarModel)) record.CarModel = update.CarModel;
+                if (!string.IsNullOrWhiteSpace(update.LicensePlate)) record.LicensePlate = update.LicensePlate;
 
                 await _dbContext.SaveChangesAsync();
-                return Ok(new ApiResponse<FuelRecord> { IsSuccess = true, Data = record, Message = "Заправка успешно обновлена." });
+
+                // Получаем FullName из Profile для ответа
+                var userProfile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.UserId == userId);
+                var fio = userProfile?.FullName ?? record.User.Username ?? "Неизвестно";
+
+                var responseDto = new FuelRecordResponseDto
+                {
+                    Id = record.Id,
+                    Fio = fio,
+                    Date = record.Date,
+                    Volume = record.Volume,
+                    Cost = record.Cost,
+                    Mileage = record.Mileage,
+                    FuelType = record.FuelType,
+                    CarModel = record.CarModel,
+                    LicensePlate = record.LicensePlate,
+                    CreatedAt = record.CreatedAt
+                };
+
+                return Ok(new ApiResponse<FuelRecordResponseDto> { IsSuccess = true, Data = responseDto, Message = "Заправка успешно обновлена." });
             }
             catch (Exception ex)
             {

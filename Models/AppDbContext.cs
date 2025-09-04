@@ -30,6 +30,11 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.Password).HasMaxLength(255).IsRequired();
                 entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                // Определение одно-к-одному связи с Profile
+                entity.HasOne(u => u.Profile)
+                      .WithOne(p => p.User)
+                      .HasForeignKey<Profile>(p => p.UserId);
             });
 
             modelBuilder.Entity<Timesheet>(entity =>
@@ -52,7 +57,10 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.FuelType).HasMaxLength(50);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.CarModel).HasMaxLength(50);
-                entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId);
+                // Явно указываем связь FuelRecord с User
+                entity.HasOne(f => f.User)
+                      .WithMany()
+                      .HasForeignKey(f => f.UserId);
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -70,7 +78,7 @@ namespace VepsPlusApi.Models
                 entity.Property(e => e.Email).HasMaxLength(100);
                 entity.Property(e => e.Phone).HasMaxLength(20);
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId);
+                // entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId); // Удалена конфликтующая строка
             });
 
             modelBuilder.Entity<Settings>(entity =>

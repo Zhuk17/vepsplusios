@@ -9,6 +9,7 @@ namespace VepsPlusApi.Models
         public string FullName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
+        public User User { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
 }

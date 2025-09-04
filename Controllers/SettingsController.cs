@@ -70,7 +70,7 @@ namespace VepsPlusApi.Controllers
                     _dbContext.Settings.Add(settings);
                 }
 
-                settings.DarkTheme = update.DarkTheme;
+                settings!.DarkTheme = update.DarkTheme;
                 settings.PushNotifications = update.PushNotifications;
                 settings.Language = update.Language ?? settings.Language;
                 settings.UpdatedAt = DateTime.UtcNow;
