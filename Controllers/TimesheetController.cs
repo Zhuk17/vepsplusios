@@ -123,7 +123,7 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTimesheet([FromBody] Timesheet request)
+        public async Task<IActionResult> AddTimesheet([FromBody] TimesheetCreateRequest request)
         {
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
@@ -138,16 +138,24 @@ namespace VepsPlusApi.Controllers
 
             try
             {
-                request.UserId = userId;
-                request.CreatedAt = DateTime.UtcNow;
-                request.Status = "На рассмотрении";
+                var timesheet = new Timesheet
+                {
+                    UserId = userId,
+                    Date = request.Date.ToUniversalTime(), // Преобразовать в UTC
+                    Project = request.Project,
+                    Hours = request.Hours,
+                    BusinessTrip = request.BusinessTrip,
+                    Comment = request.Comment,
+                    Status = "На рассмотрении",
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                _dbContext.Timesheets.Add(request);
+                _dbContext.Timesheets.Add(timesheet);
                 await _dbContext.SaveChangesAsync();
 
                 var createdTimesheet = await _dbContext.Timesheets
                     .Include(t => t.User)
-                    .FirstOrDefaultAsync(t => t.Id == request.Id);
+                    .FirstOrDefaultAsync(t => t.Id == timesheet.Id);
 
                 var responseDto = new TimesheetResponseDto
                 {
