@@ -12,7 +12,6 @@ namespace VepsPlusApi.Models
         public int Mileage { get; set; }
         public string FuelType { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? CarModel { get; set; }
         public string? LicensePlate { get; set; }
         public User User { get; set; } // Добавлено навигационное свойство
     }

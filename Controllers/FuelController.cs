@@ -4,9 +4,12 @@ using VepsPlusApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using VepsPlusApi.Extensions;
+using VepsPlusApi.Models.FuelDtos; // Добавлено для Fuel DTOs
+using VepsPlusApi.Models.TimesheetDtos; // Добавлено для Timesheet DTOs
 
 namespace VepsPlusApi.Controllers
 {
+    
     [Route("api/v1/fuel")]
     [ApiController]
     [Authorize]
@@ -56,7 +59,6 @@ namespace VepsPlusApi.Controllers
                     Cost = r.Cost,
                     Mileage = r.Mileage,
                     FuelType = r.FuelType,
-                    CarModel = r.CarModel,
                     LicensePlate = r.LicensePlate,
                     CreatedAt = r.CreatedAt
                 }).ToListAsync();
@@ -103,7 +105,6 @@ namespace VepsPlusApi.Controllers
                     Cost = request.Volume * 50m, // Стоимость рассчитывается на сервере
                     Mileage = request.Mileage,
                     FuelType = request.FuelType,
-                    CarModel = request.CarModel,
                     LicensePlate = request.LicensePlate,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -124,7 +125,6 @@ namespace VepsPlusApi.Controllers
                     Cost = newRecord.Cost,
                     Mileage = newRecord.Mileage,
                     FuelType = newRecord.FuelType,
-                    CarModel = newRecord.CarModel,
                     LicensePlate = newRecord.LicensePlate,
                     CreatedAt = newRecord.CreatedAt
                 };
@@ -191,7 +191,6 @@ namespace VepsPlusApi.Controllers
                 }
 
                 if (!string.IsNullOrWhiteSpace(update.FuelType)) record.FuelType = update.FuelType;
-                if (!string.IsNullOrWhiteSpace(update.CarModel)) record.CarModel = update.CarModel;
                 if (!string.IsNullOrWhiteSpace(update.LicensePlate)) record.LicensePlate = update.LicensePlate;
 
                 await _dbContext.SaveChangesAsync();
@@ -209,7 +208,6 @@ namespace VepsPlusApi.Controllers
                     Cost = record.Cost,
                     Mileage = record.Mileage,
                     FuelType = record.FuelType,
-                    CarModel = record.CarModel,
                     LicensePlate = record.LicensePlate,
                     CreatedAt = record.CreatedAt
                 };

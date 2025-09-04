@@ -9,21 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using VepsPlusApi.Models.TimesheetDtos; // Используем DTO из отдельного файла
 
 namespace VepsPlusApi.Controllers
 {
-    public class TimesheetResponseDto
-    {
-        public int Id { get; set; }
-        public string Fio { get; set; }
-        public string Project { get; set; }
-        public int Hours { get; set; }
-        public bool BusinessTrip { get; set; }
-        public string Comment { get; set; }
-        public string Status { get; set; }
-        public DateTime Date { get; set; }
-    }
-
     [Route("api/v1/timesheets")]
     [ApiController]
     [Authorize]
@@ -177,7 +166,7 @@ namespace VepsPlusApi.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateTimesheet(int id, [FromBody] Timesheet update)
+        public async Task<IActionResult> UpdateTimesheet(int id, [FromBody] TimesheetUpdateRequest update)
         {
             var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
