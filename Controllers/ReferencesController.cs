@@ -37,7 +37,7 @@ namespace VepsPlusApi.Controllers
         public IActionResult GetProjects()
         {
             _logger.LogInformation("Getting projects.");
-            var projects = new List<string> { "Проект 1", "Проект 2", "Проект 3", "Проект 4", "Проект 5" };
+            var projects = new List<string> { "9401", "9005", "9002", "9403", "9404", "9402", "9405", "1887", "2119", "9003", "2129" };
             return Ok(new ApiResponse<List<string>> { IsSuccess = true, Data = projects, Message = "Список проектов успешно получен." });
         }
 
