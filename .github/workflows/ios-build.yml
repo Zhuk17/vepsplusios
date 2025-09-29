@@ -41,7 +41,7 @@ jobs:
           cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build MAUI iOS App
-        run: dotnet publish ./VEPS_Plus.sln -c Release -f net8.0-ios /p:Platform=iPhone /p:BuildIpa=true
+        run: dotnet publish ./VEPS_Plus.sln -c Release -f net8.0-ios /p:BuildIpa=true
 
       - name: Upload IPA to App Store Connect
         run: |
