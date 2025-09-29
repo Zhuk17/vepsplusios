@@ -123,13 +123,13 @@ namespace VEPS_Plus.ViewModels
         }
 
         // --- Обработчики изменения дат для From/To DatePicker'ов ---
-        void OnFromDateChanged(DateTime oldValue, DateTime newValue)
+        partial void OnFromDateChanged(DateTime oldValue, DateTime newValue)
         {
             MinimumToDate = newValue; // Обновляем минимальную дату для ToDatePicker
             LoadFuelRecordsCommand?.Execute(null); // Перезагружаем данные при изменении даты
         }
 
-        void OnToDateChanged(DateTime oldValue, DateTime newValue)
+        partial void OnToDateChanged(DateTime oldValue, DateTime newValue)
         {
             MaximumFromDate = newValue; // Обновляем максимальную дату для FromDatePicker
             LoadFuelRecordsCommand?.Execute(null); // Перезагружаем данные при изменении даты
