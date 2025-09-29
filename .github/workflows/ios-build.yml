@@ -3,7 +3,7 @@ name: iOS Build and Upload
 on:
   push:
     branches:
-      - main  # или твоя ветка
+      - main   # запускается при пуше в main, можешь сменить на ios-net6 или другую ветку
 
 env:
   APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
@@ -18,24 +18,35 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Setup .NET
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
       - name: Decode certificate
-        run: |
-          echo "$CERTIFICATE_P12" | base64 --decode > cert.p12
+        run: echo "$CERTIFICATE_P12" | base64 --decode > cert.p12
 
       - name: Install certificate
-        run: |
-          security import cert.p12 -P "$CERTIFICATE_P12_PASSWORD" -T /usr/bin/codesign
+        run: security import cert.p12 -P "$CERTIFICATE_P12_PASSWORD" -T /usr/bin/codesign
 
       - name: Decode provisioning profile
+        run: echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+
+      - name: Install provisioning profile
         run: |
-          echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: Setup provisioning profile
+      - name: Build MAUI iOS App
+        run: dotnet publish ./VEPS_Plus.sln -c Release -f net8.0-ios /p:Platform=iPhone /p:BuildIpa=true
 
+      - name: Upload IPA to App Store Connect
+        run: |
+          xcrun altool --upload-app \
+            -f **/iPhone/Release/**/*.ipa \
+            -t ios \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
