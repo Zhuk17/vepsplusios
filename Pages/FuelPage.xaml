@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.FuelPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="Заправки"
+    x:DataType="vm:FuelViewModel"
+    BackgroundColor="#070707"
+    BackgroundImageSource="logoveps.png">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!--  Гос. номер  -->
+            <Label
+                FontSize="16"
+                Text="Введите гос. номер:"
+                TextColor="White" />
+            <Border
+                Padding="10"
+                BackgroundColor="#2C2D31"
+                StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Entry
+                    BackgroundColor="Transparent"
+                    Text="{Binding NewLicensePlate}"
+                    TextColor="White" />
+            </Border>
+
+            <Label
+                FontSize="16"
+                Text="Выберите тип топлива:"
+                TextColor="White" />
+            <Border
+                Padding="10"
+                BackgroundColor="#2C2D31"
+                StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Picker
+                    BackgroundColor="Transparent"
+                    ItemsSource="{Binding FuelTypes}"
+                    SelectedItem="{Binding SelectedFuelType}"
+                    TextColor="White" />
+
+            </Border>
+
+            <!--  Объем топлива  -->
+            <Label
+                FontSize="16"
+                Text="Введите объем топлива:"
+                TextColor="White" />
+            <Border
+                Padding="10"
+                BackgroundColor="#2C2D31"
+                StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="8">
+                    <Entry
+                        BackgroundColor="Transparent"
+                        Keyboard="Numeric"
+                        Text="{Binding NewFuelVolume}"
+                        TextColor="White"
+                        WidthRequest="280" />
+
+                    <Label
+                        Text="Л"
+                        TextColor="White"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!--  Пробег  -->
+            <Label
+                FontSize="16"
+                Text="Введите пробег автомобиля:"
+                TextColor="White" />
+            <Border
+                Padding="10"
+                BackgroundColor="#2C2D31"
+                StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="8">
+                    <Entry
+                        BackgroundColor="Transparent"
+                        Keyboard="Text"
+                        MaxLength="10"
+                        Text="{Binding NewFuelMileage}"
+                        TextColor="White"
+                        WidthRequest="280" />
+
+                    <Label
+                        Text="Км"
+                        TextColor="White"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!--  Дата  -->
+            <Label
+                FontSize="16"
+                Text="Введите дату заправки:"
+                TextColor="White" />
+            <Border
+                Padding="10"
+                BackgroundColor="#2C2D31"
+                StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <DatePicker
+                    BackgroundColor="Transparent"
+                    Date="{Binding NewFuelDate}"
+                    Format="dd MMMM yyyy"
+                    MaximumDate="2100-12-31"
+                    MinimumDate="2024-01-01"
+                    TextColor="White" />
+
+            </Border>
+
+            <!--  Кнопка  -->
+            <Button
+                Margin="0,30,0,0"
+                BackgroundColor="#9DA030"
+                Command="{Binding AddFuelRecordCommand}"
+                CornerRadius="10"
+                FontAttributes="Bold"
+                FontSize="25"
+                HeightRequest="55"
+                Text="ОТПРАВИТЬ"
+                TextColor="White" />
+
+            <Label
+                Margin="0,20,0,10"
+                FontSize="20"
+                Text="История заправок"
+                TextColor="White" />
+
+            <CollectionView ItemsSource="{Binding FuelRecords}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FuelRecordResponseDto">
+                        <Border
+                            Margin="0,5,0,5"
+                            Padding="10"
+                            BackgroundColor="#1C1C1E"
+                            StrokeShape="RoundRectangle 10"
+                            StrokeThickness="0">
+                            <VerticalStackLayout Spacing="5">
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="ФИО: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding Fio}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Дата: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding Date, StringFormat='{0:dd.MM.yyyy}'}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Гос. номер: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding LicensePlate}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Тип топлива: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding FuelType}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Объем: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding Volume, StringFormat='{0:F2} л'}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Стоимость: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding Cost, StringFormat='{0:F2} ₽'}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout>
+                                    <Label
+                                        FontSize="14"
+                                        Text="Пробег: "
+                                        TextColor="Gray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding Mileage, StringFormat='{0} км'}"
+                                        TextColor="White" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

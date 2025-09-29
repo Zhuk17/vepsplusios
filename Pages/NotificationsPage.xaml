@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.NotificationsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:VEPS_Plus.Converters"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="Уведомления"
+    x:DataType="vm:NotificationsViewModel"
+    BackgroundColor="#0D1B2A">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <!--  Стрелка назад  -->
+        <Image
+            Grid.Row="0"
+            Margin="10,10,0,0"
+            Aspect="AspectFit"
+            HeightRequest="35"
+            HorizontalOptions="Start"
+            Source="arrow_back.png"
+            VerticalOptions="Start"
+            WidthRequest="35">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnArrowTapped" />
+            </Image.GestureRecognizers>
+        </Image>
+
+        <!--  Заголовок и список уведомлений  -->
+        <VerticalStackLayout Grid.Row="1" Padding="20">
+            <Label
+                Margin="0,20,0,20"
+                FontSize="24"
+                HorizontalOptions="Center"
+                Text="Уведомления"
+                TextColor="White"
+                VerticalOptions="Center" />
+
+            <!--  Список уведомлений  -->
+            <CollectionView ItemsSource="{Binding Notifications}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:Notification">
+                        <Frame
+                            Margin="0,5"
+                            Padding="15"
+                            BackgroundColor="{Binding IsRead, Converter={StaticResource IsReadToBackgroundColorConverter}}"
+                            CornerRadius="10">
+                            <StackLayout Spacing="5">
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="Medium"
+                                    Text="{Binding Title}"
+                                    TextColor="White" />
+                                <Label
+                                    FontSize="Small"
+                                    Text="{Binding Message}"
+                                    TextColor="LightGray" />
+                                <Label
+                                    FontSize="Micro"
+                                    Text="{Binding CreatedAt, StringFormat='Дата: {0:dd.MM.yyyy HH:mm}'}"
+                                    TextColor="Gray" />
+                                <Button
+                                    Margin="0,5,0,0"
+                                    BackgroundColor="#3b9ab0"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NotificationsViewModel}}, Path=MarkAsReadAsyncCommand}"
+                                    CommandParameter="{Binding Id}"
+                                    CornerRadius="5"
+                                    IsVisible="{Binding IsRead, Converter={StaticResource InvertedBoolConverter}}"
+                                    Text="Отметить как прочитанное"
+                                    TextColor="White" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <!--  Кнопки загрузки/другие действия внизу (опционально)  -->
+        <StackLayout
+            Grid.Row="2"
+            Padding="20"
+            HorizontalOptions="Center"
+            Orientation="Horizontal"
+            Spacing="10">
+            <Button
+                BackgroundColor="#2196F3"
+                Command="{Binding LoadNotificationsCommand}"
+                Text="Обновить"
+                TextColor="White" />
+            <!--  Добавь другие кнопки, если нужны, например "Отметить все прочитанными"  -->
+        </StackLayout>
+    </Grid>
+
+    <!--  РЕСУРСЫ: Конвертеры  -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="ReadNotificationColor">#2A364F</Color>
+            <Color x:Key="UnreadNotificationColor">#1B263B</Color>
+
+            <Style x:Key="NotificationFrameStyle" TargetType="Frame">
+                <Setter Property="Margin" Value="0,5" />
+                <Setter Property="Padding" Value="15" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="BackgroundColor" Value="{StaticResource UnreadNotificationColor}" />
+            </Style>
+
+            <!--  !!! ИСПРАВЛЕНИЕ: Использование префикса "converters" !!!  -->
+            <converters:IsReadToBackgroundColorConverter x:Key="IsReadToBackgroundColorConverter" />
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+</ContentPage>

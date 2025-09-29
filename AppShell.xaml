@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="VEPS_Plus.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:VEPS_Plus"
+    xmlns:pages="clr-namespace:VEPS_Plus.Pages"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="VEPS_Plus"
+    FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="Black">
+
+    <!--  ИСПРАВЛЕНИЕ: Shell.TitleView и другие свойства Shell должны идти в первую очередь  -->
+    <Shell.TitleView>
+        <Border
+            HorizontalOptions="FillAndExpand"
+            StrokeShape="RoundRectangle 0,0,20,20"
+            StrokeThickness="0"
+            VerticalOptions="CenterAndExpand">
+            <!-- Add an empty line here to force XAML recompilation -->
+            <Grid
+                x:Name="ShellHeader"
+                Padding="10"
+                Background="#1f2024"
+                ColumnDefinitions="Auto,*,Auto">
+                <Image
+                    Grid.Column="0"
+                    Aspect="AspectFit"
+                    HeightRequest="40"
+                    HorizontalOptions="Start"
+                    Source="profile.png"
+                    VerticalOptions="Center"
+                    WidthRequest="40">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnProfileTapped" />
+                    </Image.GestureRecognizers>
+                </Image>
+
+                <StackLayout
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Center">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnProfileTapped" />
+                    </StackLayout.GestureRecognizers>
+                    <Label
+                        x:Name="UsernameLabel"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalOptions="Center"
+                        Text="{Binding ShellCurrentUser.Username}" />
+                    <Label
+                        Margin="0.5,0,0,0"
+                        FontAttributes="Bold"
+                        FontSize="11"
+                        Text="Перейти в профиль"
+                        TextColor="#535353" />
+                </StackLayout>
+
+                <Image
+                    Grid.Column="2"
+                    Margin="0,0,10,0"
+                    Aspect="AspectFit"
+                    HeightRequest="24"
+                    HorizontalOptions="End"
+                    Source="notifications.png"
+                    VerticalOptions="Center"
+                    WidthRequest="24">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBellTapped" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Grid>
+        </Border>
+    </Shell.TitleView>
+
+    <!--  Теперь, после всех свойств Shell, идут элементы содержимого Shell  -->
+
+    <!--  КРИТИЧЕСКИЙ МОМЕНТ: LoginPage - это начальный корневой элемент Shell по умолчанию.  -->
+    <ShellContent
+        ContentTemplate="{DataTemplate pages:LoginPage}"
+        Route="LoginPage"
+        Shell.FlyoutItemIsVisible="False"
+        Shell.TabBarIsVisible="False"
+        Shell.FlyoutBehavior="Disabled" />
+
+    <!--  Остальные скрытые страницы, которые не являются частью основной навигации  -->
+    <FlyoutItem Shell.FlyoutItemIsVisible="False" Shell.TabBarIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate pages:ProfilePage}" Route="ProfilePage" />
+        <ShellContent ContentTemplate="{DataTemplate pages:NotificationsPage}" Route="NotificationsPage" />
+    </FlyoutItem>
+
+    <!--  Основная панель вкладок (TabBar)  -->
+    <TabBar>
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate pages:MainPage}"
+            Icon="home.png"
+            Route="MainPage" />
+
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate pages:TimesheetPage}"
+            Icon="timesheet.png"
+            Route="TimesheetPage" />
+
+        <!--  ИСПРАВЛЕНИЕ: Группируем FuelPage и FuelPage2 под одним табом "Заправки"  -->
+        <Tab Title="" Icon="fuel.png">
+            <ShellContent
+                Title="Добавить"
+                ContentTemplate="{DataTemplate pages:FuelPage}"
+                Route="FuelPage" />
+            <ShellContent
+                Title="История"
+                ContentTemplate="{DataTemplate pages:FuelPage2}"
+                Route="FuelPage2" />
+        </Tab>
+
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate pages:SettingsPage}"
+            Icon="settings.png"
+            Route="SettingsPage" />
+    </TabBar>
+
+</Shell>

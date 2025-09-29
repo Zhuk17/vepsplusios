@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="Настройки"
+    x:DataType="vm:SettingsViewModel"
+    BackgroundColor="#070707">
+    <!-- BackgroundImageSource="logo_veps.png" -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="SettingsLabelStyle" TargetType="Label">
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="Margin" Value="5,2" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid>
+        <Image
+            Source="logo_veps.png"
+            Aspect="AspectFit"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Opacity="0.1" /> <!-- Adjust opacity as needed -->
+        <ScrollView>
+            <VerticalStackLayout>
+                <!--  Заголовок  -->
+                <Label
+                    Margin="0,20,0,10"
+                    FontSize="20"
+                    HorizontalOptions="Center"
+                    Text="Настройки"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+
+                <!--  Блок настроек  -->
+                <Border
+                    Margin="10,10,10,10"
+                    Padding="10"
+                    BackgroundColor="#1F2024"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 20">
+                    <Grid
+                        ColumnSpacing="10"
+                        HorizontalOptions="FillAndExpand"
+                        RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Тёмная тема  -->
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabelStyle}"
+                            Text="Тёмная тема" />
+                        <CheckBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            HorizontalOptions="Center"
+                            IsChecked="{Binding DarkTheme}"
+                            CheckedChanged="OnDarkThemeChanged"
+                            VerticalOptions="Center" />
+
+                        <!--  Push-уведомления  -->
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabelStyle}"
+                            Text="Push-уведомления" />
+                        <CheckBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalOptions="Center"
+                            IsChecked="{Binding PushNotifications}"
+                            VerticalOptions="Center" />
+
+                        <!--  Тест push-уведомлений  -->
+                        <Button
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            HorizontalOptions="FillAndExpand"
+                            BackgroundColor="#3b9ab0"
+                            BorderColor="Transparent"
+                            BorderWidth="0"
+                            Clicked="OnTestPushClicked"
+                            FontSize="12"
+                            Text="Тест push-уведомлений"
+                            TextColor="White"
+                            VerticalOptions="Center"
+                            Padding="10,5" />
+
+                        <!--  Язык  -->
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabelStyle}"
+                            Text="Язык" />
+                        <Picker
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            BackgroundColor="#303135"
+                            FontSize="10"
+                            HorizontalOptions="FillAndExpand"
+                            HorizontalTextAlignment="Center"
+                            ItemsSource="{Binding Languages}"
+                            SelectedItem="{Binding Language}"
+                            TextColor="White"
+                            VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

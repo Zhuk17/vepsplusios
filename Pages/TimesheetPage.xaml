@@ -1,0 +1,924 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.TimesheetPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="Табели"
+    x:DataType="vm:TimesheetViewModel"
+    BackgroundColor="#070707">
+    <!-- BackgroundImageSource="logo_veps.png" -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid>
+        <Image
+            Source="logo_veps.png"
+            Aspect="AspectFit"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Opacity="0.1" /> <!-- Adjust opacity as needed -->
+        <ScrollView>
+            <VerticalStackLayout>
+
+            <Border
+                Margin="0,10,0,0"
+                BackgroundColor="#1F2024"
+                HeightRequest="50"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 20">
+
+                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+
+                    <Label
+                        FontSize="20"
+                        Text="Отработано "
+                        TextColor="White" />
+
+                    <Label
+                        FontSize="20"
+                        Text="{Binding WorkedHours}"
+                        TextColor="White" />
+
+                    <Label
+                        FontSize="20"
+                        Text="/"
+                        TextColor="White" />
+
+                    <Label
+                        FontSize="20"
+                        Text="{Binding WorkingHoursInMonth}"
+                        TextColor="White" />
+
+                    <Label
+                        FontSize="20"
+                        Text=" ч"
+                        TextColor="White" />
+
+                </HorizontalStackLayout>
+
+            </Border>
+
+            <Border
+                x:Name="Not_Big_Border"
+                Margin="0,10,0,0"
+                Padding="0"
+                BackgroundColor="#1F2024"
+                HeightRequest="{Binding NotificationsBlockHeight}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 20"
+                StrokeThickness="0">
+
+                <Grid RowDefinitions="Auto, *">
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Image
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            HeightRequest="15"
+                            HorizontalOptions="Center"
+                            Source="notifications.png"
+                            VerticalOptions="Center" />
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            FontSize="20"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="Уведомления"
+                            TextColor="White"
+                            VerticalOptions="Center" />
+
+                        <Button
+                            x:Name="btn_roll_not"
+                            Grid.Column="2"
+                            BackgroundColor="Transparent"
+                            Clicked="Button_Clicked"
+                            HeightRequest="15"
+                            HorizontalOptions="Center"
+                            ImageSource="down.png"
+                            Rotation="{Binding NotificationsRollButtonRotation}"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                    <Border
+                        x:Name="Not_Border"
+                        Grid.Row="1"
+                        Margin="10"
+                        Padding="0"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="Fill"
+                        IsVisible="{Binding IsNotificationsBlockVisible}"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 10,10,0,0"
+                        StrokeThickness="0"
+                        VerticalOptions="FillAndExpand">
+
+                        <VerticalStackLayout>
+
+                            <Grid
+                                Margin="0,0,0,0"
+                                ColumnSpacing="2"
+                                HorizontalOptions="FillAndExpand"
+                                RowSpacing="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="14*" />
+                                    <ColumnDefinition Width="10*" />
+                                    <ColumnDefinition Width="20*" />
+                                    <ColumnDefinition Width="36*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Дата"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Проект"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Часы"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="3"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Статус"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="4"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Комментарий"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                            </Grid>
+
+                            <CollectionView
+                                x:Name="NotificationList"
+                                BackgroundColor="Transparent"
+                                HeightRequest="100"
+                                ItemsSource="{Binding Notifications}"
+                                VerticalScrollBarVisibility="Always">
+
+                                <CollectionView.ItemTemplate>
+
+                                    <DataTemplate x:DataType="vm:TimesheetNotificationDto">
+
+                                        <Grid
+                                            Margin="0,2,0,0"
+                                            ColumnSpacing="2"
+                                            RowSpacing="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="20*" />
+                                                <ColumnDefinition Width="14*" />
+                                                <ColumnDefinition Width="10*" />
+                                                <ColumnDefinition Width="20*" />
+                                                <ColumnDefinition Width="36*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Label
+                                                Grid.Column="0"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Date, StringFormat='{0:dd.MM}'}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="1"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Project}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="2"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Hours}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="3"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Status}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="4"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Comment}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                        </Grid>
+
+                                    </DataTemplate>
+
+                                </CollectionView.ItemTemplate>
+
+                            </CollectionView>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+            <Border
+                Margin="0,10,0,0"
+                Padding="0,10,0,0"
+                BackgroundColor="#1F2024"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 20">
+
+
+                <VerticalStackLayout>
+
+                    <Label
+                        FontSize="20"
+                        HorizontalOptions="Center"
+                        Text="Проставление табеля"
+                        TextColor="White" />
+
+                    <Border
+                        Margin="10,10,10,0"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="FillAndExpand"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0">
+
+                        <Grid
+                            Margin="0,0,0,0"
+                            ColumnSpacing="2"
+                            HorizontalOptions="FillAndExpand"
+                            RowSpacing="2">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                            </Grid.RowDefinitions>
+
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Дата"
+                                TextColor="White"
+                                VerticalTextAlignment="Center" />
+
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Проект"
+                                TextColor="White"
+                                VerticalTextAlignment="Center" />
+
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Часы"
+                                TextColor="White"
+                                VerticalTextAlignment="Center" />
+
+                            <Label
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Командировка"
+                                TextColor="White"
+                                VerticalTextAlignment="Center" />
+
+                            <Label
+                                Grid.Row="4"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Комментарий"
+                                TextColor="White"
+                                VerticalTextAlignment="Center" />
+
+                            <Border
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                HorizontalOptions="FillAndExpand"
+                                Stroke="Transparent"
+                                StrokeThickness="0" />
+
+                            <DatePicker
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                Date="{Binding Date}"
+                                FontSize="10"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+
+
+                            <Picker
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                ItemsSource="{Binding Projects}"
+                                SelectedItem="{Binding SelectedProject}" />
+
+
+                            <Picker
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                ItemsSource="{Binding HoursOptions}"
+                                SelectedItem="{Binding SelectedHours}" />
+
+                            <Border
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                HorizontalOptions="FillAndExpand"
+                                Stroke="Transparent"
+                                StrokeThickness="0" />
+
+                            <CheckBox
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                HorizontalOptions="Center"
+                                IsChecked="{Binding BusinessTrip}"
+                                VerticalOptions="Center" />
+
+
+                            <Editor
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                AutoSize="TextChanges"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Placeholder="Введите комментарий"
+                                Text="{Binding Comment}" />
+
+                        </Grid>
+
+                    </Border>
+
+                    <Button
+                        Margin="10"
+                        BackgroundColor="#303135"
+                        BorderColor="Black"
+                        BorderWidth="2"
+                        Command="{Binding AddTimesheetCommand}"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        Text="Проставить"
+                        TextColor="White" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <Border
+                Margin="0,30,0,10"
+                BackgroundColor="#1F2024"
+                StrokeShape="RoundRectangle 20"
+                StrokeThickness="0">
+
+            </Border>
+
+            <Border
+                x:Name="Border_Big_History"
+                Margin="0,0,0,10"
+                Padding="0,0,0,10"
+                BackgroundColor="#1F2024"
+                HeightRequest="{Binding HistoryBlockHeight}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 20">
+
+                <VerticalStackLayout>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            FontSize="20"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            Text="История"
+                            TextColor="White" />
+
+                        <Button
+                            x:Name="btn_roll_history"
+                            Grid.Column="2"
+                            BackgroundColor="Transparent"
+                            Clicked="btn_history_clicked"
+                            HeightRequest="15"
+                            HorizontalOptions="Center"
+                            ImageSource="down.png"
+                            Rotation="{Binding HistoryRollButtonRotation}"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                    <Border
+                        x:Name="Border_Small_History"
+                        Margin="10"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="FillAndExpand"
+                        IsVisible="{Binding IsHistoryBlockVisible}"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 10,10,10,10"
+                        StrokeThickness="0">
+
+                        <Grid
+                            ColumnSpacing="2"
+                            HorizontalOptions="FillAndExpand"
+                            RowSpacing="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                                <RowDefinition Height="40" />
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Фильтры"
+                                TextColor="White"
+                                VerticalOptions="FillAndExpand"
+                                VerticalTextAlignment="Center" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Работник"
+                                TextColor="White"
+                                VerticalOptions="FillAndExpand"
+                                VerticalTextAlignment="Center" />
+                            <Picker
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                ItemsSource="{Binding Workers}"
+                                SelectedItem="{Binding SelectedWorker}" />
+                            <Label
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Дата"
+                                TextColor="White"
+                                VerticalOptions="FillAndExpand"
+                                VerticalTextAlignment="Center" />
+
+                            <Border
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                BackgroundColor="#303135"
+                                StrokeThickness="0">
+
+                                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+
+                                    <Label
+                                        Margin="10"
+                                        FontSize="10"
+                                        HorizontalOptions="Start"
+                                        Text="с"
+                                        TextColor="White"
+                                        VerticalOptions="Center" />
+
+                                    <DatePicker
+                                        Date="{Binding StartDate}"
+                                        FontSize="10"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+                            </Border>
+
+                            <Border
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                BackgroundColor="#303135"
+                                StrokeThickness="0">
+
+                                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+
+                                    <Label
+                                        Margin="10"
+                                        FontSize="10"
+                                        HorizontalOptions="Start"
+                                        Text="по"
+                                        TextColor="White"
+                                        VerticalOptions="Center" />
+
+                                    <DatePicker
+                                        Date="{Binding EndDate}"
+                                        FontSize="10"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+                            </Border>
+
+                            <Label
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Проект"
+                                TextColor="White"
+                                VerticalOptions="FillAndExpand"
+                                VerticalTextAlignment="Center" />
+
+                            <Picker
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                ItemsSource="{Binding Projects}"
+                                SelectedItem="{Binding SelectedFilterProject}" />
+
+                            <Label
+                                Grid.Row="4"
+                                Grid.Column="0"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="Статус"
+                                TextColor="White"
+                                VerticalOptions="FillAndExpand"
+                                VerticalTextAlignment="Center" />
+
+                            <Picker
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                BackgroundColor="#303135"
+                                FontSize="10"
+                                HorizontalOptions="FillAndExpand"
+                                HorizontalTextAlignment="Center"
+                                ItemsSource="{Binding Statuses}"
+                                SelectedItem="{Binding SelectedFilterStatus}" />
+
+                        </Grid>
+
+                    </Border>
+
+                    <Button
+                        BackgroundColor="#303135"
+                        BorderColor="Black"
+                        BorderWidth="2"
+                        Command="{Binding SortTimesheetsCommand}"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        Text="Сортировать"
+                        TextColor="White"
+                        VerticalOptions="Center" />
+
+                    <Border
+                        Margin="10"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="FillAndExpand"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 10,10,0,0"
+                        StrokeThickness="0">
+
+                        <VerticalStackLayout HeightRequest="180">
+                            <Grid
+                                BackgroundColor="Transparent"
+                                ColumnSpacing="2"
+                                HeightRequest="25">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="1.5*" />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="4*" />
+                                    <ColumnDefinition Width="3*" />
+                                </Grid.ColumnDefinitions>
+                                <Label
+                                    Grid.Column="0"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="ФИО"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                                <Label
+                                    Grid.Column="1"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Проект"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                                <Label
+                                    Grid.Column="2"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Часы"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                                <Label
+                                    Grid.Column="3"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Ком."
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                                <Label
+                                    Grid.Column="4"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Комментарий"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                                <Label
+                                    Grid.Column="5"
+                                    BackgroundColor="#303135"
+                                    FontSize="10"
+                                    HorizontalTextAlignment="Center"
+                                    Text="Статус"
+                                    TextColor="White"
+                                    VerticalTextAlignment="Center" />
+                            </Grid>
+
+                            <CollectionView
+                                x:Name="History_CollView"
+                                Margin="0,0,0,30"
+                                BackgroundColor="Transparent"
+                                HeightRequest="150"
+                                ItemsSource="{Binding Rows}"
+                                SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                                SelectionMode="Single"
+                                VerticalScrollBarVisibility="Always">
+
+                                <CollectionView.ItemTemplate>
+
+                                    <DataTemplate x:DataType="vm:TimesheetResponseDto">
+
+                                        <Grid Margin="0,2,0,0" ColumnSpacing="2">
+
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="3*" />
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="1.5*" />
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="4*" />
+                                                <ColumnDefinition Width="3*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="40" />
+                                            </Grid.RowDefinitions>
+
+                                            <Label
+                                                Grid.Column="0"
+                                                Padding="1,1,1,1"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Fio}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="1"
+                                                Padding="1,1,1,1"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Project}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="2"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Hours}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <CheckBox
+                                                Grid.Column="3"
+                                                BackgroundColor="#303135"
+                                                HorizontalOptions="Center"
+                                                IsChecked="{Binding BusinessTrip}"
+                                                IsEnabled="False"
+                                                VerticalOptions="Center" />
+
+                                            <Label
+                                                Grid.Column="4"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Comment}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                            <Label
+                                                Grid.Column="5"
+                                                BackgroundColor="#303135"
+                                                FontSize="10"
+                                                HorizontalTextAlignment="Center"
+                                                Text="{Binding Status}"
+                                                TextColor="White"
+                                                VerticalTextAlignment="Center" />
+
+                                        </Grid>
+
+                                    </DataTemplate>
+
+                                </CollectionView.ItemTemplate>
+
+                            </CollectionView>
+
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Grid
+                        Margin="10,0,10,10"
+                        ColumnSpacing="20"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40" />
+                        </Grid.RowDefinitions>
+
+                        <Button
+                            Grid.Column="0"
+                            BackgroundColor="#303135"
+                            BorderColor="Black"
+                            BorderWidth="2"
+                            Command="{Binding ApproveTimesheetCommand}"
+                            FontSize="10"
+                            HorizontalOptions="Center"
+                            Text="Подтвердить"
+                            TextColor="White"
+                            VerticalOptions="Center"
+                            WidthRequest="100"
+                            IsVisible="{Binding IsLeader}" /> <!-- Visible only for leaders -->
+
+                        <Button
+                            Grid.Column="2"
+                            BackgroundColor="#303135"
+                            BorderColor="Black"
+                            BorderWidth="2"
+                            Command="{Binding RejectTimesheetCommand}"
+                            FontSize="10"
+                            HorizontalOptions="Center"
+                            Text="Отклонить"
+                            TextColor="White"
+                            VerticalOptions="Center"
+                            WidthRequest="100"
+                            IsVisible="{Binding IsLeader}" /> <!-- Visible only for leaders -->
+
+                    </Grid>
+
+                </VerticalStackLayout>
+
+            </Border>
+        </VerticalStackLayout>
+
+    </ScrollView>
+    </Grid>
+</ContentPage>

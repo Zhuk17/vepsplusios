@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.ProfilePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:VEPS_Plus.ViewModels"
+    Title="Профиль"
+    x:DataType="vm:ProfileViewModel"
+    BackgroundColor="#0D1B2A">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!--  Стрелка назад  -->
+        <Image
+            Grid.Row="0"
+            Margin="10,10,0,0"
+            Aspect="AspectFit"
+            HeightRequest="35"
+            HorizontalOptions="Start"
+            Source="arrow_back.png"
+            VerticalOptions="Start"
+            WidthRequest="35">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnArrowTapped" />
+            </Image.GestureRecognizers>
+        </Image>
+
+        <!--  Контент  -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="15">
+
+                <Label
+                    Margin="0,20,0,0"
+                    FontSize="24"
+                    HorizontalOptions="Center"
+                    Text="Профиль"
+                    TextColor="White" />
+
+                <!-- Шапка аккаунта -->
+                <Grid ColumnDefinitions="*,Auto" Padding="0,10">
+                    <VerticalStackLayout>
+                        <Label Text="Пользователь" TextColor="Gray" />
+                        <Label Text="{Binding Username}" TextColor="White" />
+                        <Label Text="Роль" TextColor="Gray" />
+                        <Label Text="{Binding RoleDisplayName}" TextColor="White" />
+                        <Label Text="{Binding AccountCreatedAt}" TextColor="#9aa0a6" FontSize="12" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1" Text="Выйти" Command="{Binding LogoutAsyncCommand}" />
+                </Grid>
+
+                <!-- Просмотр профиля -->
+                <Border BackgroundColor="#1F2024" Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Grid.Row="0" Text="ФИО" TextColor="Gray" FontSize="12" />
+                        <Label Grid.Row="1" FontSize="16" Text="{Binding FullName}" TextColor="White" Margin="0,0,0,10" />
+                        <Label Grid.Row="2" Text="Email" TextColor="Gray" FontSize="12" />
+                        <Label Grid.Row="3" FontSize="16" Text="{Binding Email}" TextColor="White" Margin="0,0,0,10" />
+                        <Label Grid.Row="4" Text="Телефон" TextColor="Gray" FontSize="12" />
+                        <Label Grid.Row="5" FontSize="16" Text="{Binding Phone}" TextColor="White" Margin="0,0,0,10" />
+                        <Label Grid.Row="6" Text="{Binding ProfileUpdatedAt}" TextColor="#9aa0a6" FontSize="10" Margin="0,5,0,10" />
+                        <Button Grid.Row="7" Margin="0,10,0,0" Text="Редактировать" Command="{Binding StartEditingCommand}" 
+                                BackgroundColor="#3b9ab0" TextColor="White" CornerRadius="8" />
+                    </Grid>
+                </Border>
+
+                <!-- Редактирование профиля -->
+                <Border IsVisible="{Binding IsEditing}" BackgroundColor="#1F2024" Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Grid.Row="0" Text="ФИО" TextColor="Gray" FontSize="12" />
+                        <Entry Grid.Row="1" Text="{Binding FullName}" BackgroundColor="#303135" TextColor="White" Margin="0,0,0,10" />
+                        <Label Grid.Row="2" Text="Email" TextColor="Gray" FontSize="12" />
+                        <Entry Grid.Row="3" Text="{Binding Email}" BackgroundColor="#303135" TextColor="White" Margin="0,0,0,10" />
+                        <Label Grid.Row="4" Text="Телефон" TextColor="Gray" FontSize="12" />
+                        <Entry Grid.Row="5" Text="{Binding Phone}" BackgroundColor="#303135" TextColor="White" Margin="0,0,0,10" />
+                        <HorizontalStackLayout Grid.Row="6" Spacing="10" Margin="0,10,0,0">
+                            <Button Text="Сохранить" Command="{Binding SaveProfileAsyncCommand}" 
+                                    BackgroundColor="#28a745" TextColor="White" CornerRadius="8" />
+                            <Button Text="Отмена" Command="{Binding CancelEditingCommand}" 
+                                    BackgroundColor="#6c757d" TextColor="White" CornerRadius="8" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Смена пароля -->
+                <Border BackgroundColor="#1F2024" Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15">
+                    <StackLayout Spacing="10">
+                        <Label Text="Смена пароля" FontAttributes="Bold" TextColor="White" FontSize="16" />
+                        <Entry Placeholder="Текущий пароль" Text="{Binding CurrentPassword}" IsPassword="True" 
+                               BackgroundColor="#303135" TextColor="White" PlaceholderColor="Gray" />
+                        <Entry Placeholder="Новый пароль" Text="{Binding NewPassword}" IsPassword="True" 
+                               BackgroundColor="#303135" TextColor="White" PlaceholderColor="Gray" />
+                        <Entry Placeholder="Подтвердите пароль" Text="{Binding ConfirmPassword}" IsPassword="True" 
+                               BackgroundColor="#303135" TextColor="White" PlaceholderColor="Gray" />
+                        <Button Text="Сменить пароль" Command="{Binding ChangePasswordAsyncCommand}" 
+                                BackgroundColor="#3b9ab0" TextColor="White" CornerRadius="8" Margin="0,10,0,0" />
+                    </StackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
+
+

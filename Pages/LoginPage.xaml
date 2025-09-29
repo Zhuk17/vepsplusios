@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:fluent="clr-namespace:VEPS_Plus;assembly=VEPS_Plus"
+    xmlns:local="clr-namespace:VEPS_Plus"
+    xmlns:viewmodels="clr-namespace:VEPS_Plus.ViewModels"
+    Title="LoginPage"
+    x:DataType="viewmodels:LoginViewModel"
+    BackgroundColor="#0D1B2A">
+    <Grid RowDefinitions="*,2*,1.2*">
+        <Border
+            Grid.Row="1"
+            Margin="30,0,30,0"
+            Background="White"
+            HorizontalOptions="FillAndExpand"
+            Opacity="0.3"
+            StrokeShape="RoundRectangle 25"
+            VerticalOptions="FillAndExpand" />
+        <VerticalStackLayout
+            Grid.Row="1"
+            Margin="30,0,30,0"
+            Padding="40,-25,40,0"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand">
+            <Border
+                Margin="0,0,0,0"
+                Background="White"
+                HorizontalOptions="Center"
+                Opacity="0.95"
+                StrokeShape="RoundRectangle 35">
+                <Image
+                    Aspect="AspectFit"
+                    BackgroundColor="#3b9ab0"
+                    HeightRequest="70"
+                    HorizontalOptions="Center"
+                    Opacity="0.9"
+                    Source="profile.png"
+                    VerticalOptions="Start"
+                    WidthRequest="70" />
+            </Border>
+            <Label
+                Margin="0,10,0,0"
+                FontAttributes="Bold"
+                FontSize="22"
+                HorizontalOptions="Center"
+                Text="Авторизация" />
+
+            <Border
+                Margin="0,20,0,0"
+                BackgroundColor="White"
+                HeightRequest="60"
+                HorizontalOptions="FillAndExpand"
+                Opacity="0.9"
+                StrokeShape="RoundRectangle 5"
+                VerticalOptions="Start">
+                <Grid
+                    Padding="10,0"
+                    ColumnDefinitions="Auto,*"
+                    VerticalOptions="Center">
+                    <!--  аватар  -->
+                    <Image
+                        Grid.Column="0"
+                        Aspect="AspectFit"
+                        HeightRequest="25"
+                        HorizontalOptions="Start"
+                        Opacity="0.6"
+                        Source="avatar.png"
+                        VerticalOptions="Center"
+                        WidthRequest="25" />
+                    <!--  поле ввода логина  -->
+                    <Entry
+                        Grid.Column="1"
+                        Margin="15,0,0,0"
+                        BackgroundColor="Transparent"
+                        FontSize="16"
+                        Placeholder="Пользователь"
+                        PlaceholderColor="#999"
+                        Text="{Binding Username}"
+                        TextColor="#333"
+                        VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border
+                Margin="0,10,0,0"
+                BackgroundColor="White"
+                HeightRequest="60"
+                HorizontalOptions="FillAndExpand"
+                Opacity="0.9"
+                StrokeShape="RoundRectangle 5"
+                VerticalOptions="Start">
+                <Grid
+                    Padding="10,0"
+                    ColumnDefinitions="Auto,*,Auto"
+                    VerticalOptions="Center">
+                    <!--  замок  -->
+                    <Image
+                        Grid.Column="0"
+                        Margin="-2,0,0,0"
+                        Aspect="AspectFit"
+                        HeightRequest="30"
+                        HorizontalOptions="Start"
+                        Opacity="0.6"
+                        Source="password.png"
+                        VerticalOptions="Center"
+                        WidthRequest="27" />
+                    <!--  поле ввода пароля  -->
+                    <Entry
+                        Grid.Column="1"
+                        Margin="15,0,0,0"
+                        BackgroundColor="Transparent"
+                        FontSize="16"
+                        IsPassword="{Binding IsPasswordVisible, Converter={StaticResource InvertedBoolConverter}}"
+                        Placeholder="Пароль"
+                        PlaceholderColor="#999"
+                        Text="{Binding Password}"
+                        TextColor="#333"
+                        VerticalOptions="Center" />
+                    <!--  показать/скрыть пароль  -->
+                    <Button Grid.Column="2" Text="👁" BackgroundColor="Transparent" Command="{Binding TogglePasswordVisibilityCommand}" />
+                </Grid>
+            </Border>
+
+            <ActivityIndicator IsVisible="{Binding IsLoading}" IsRunning="{Binding IsLoading}" Color="#3b9ab0" Margin="0,15,0,0" />
+            <Button
+                Margin="0,10,0,0"
+                BackgroundColor="#3b9ab0"
+                Command="{Binding LoginCommand}"
+                FontSize="20"
+                HeightRequest="60"
+                Text="Войти"
+                TextColor="White"
+                VerticalOptions="Center"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout
+            Grid.Row="2"
+            Margin="30,40,30,0"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="Start">
+            <BoxView
+                BackgroundColor="White"
+                HeightRequest="1"
+                Opacity="0.8" />
+
+            <Label
+                Margin="0,10,0,0"
+                FontSize="13"
+                HorizontalOptions="Center"
+                Text="ВЭПС+ | Лучшее корпоративное приложение" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

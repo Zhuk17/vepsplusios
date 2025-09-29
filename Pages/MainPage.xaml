@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="VEPS_Plus.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Главная"
+    BackgroundColor="Black">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30"
+            HorizontalOptions="FillAndExpand"
+            Spacing="50"
+            VerticalOptions="CenterAndExpand">
+
+            <Label
+                Margin="0,50,0,0"
+                FontSize="28"
+                HorizontalOptions="Center"
+                Text="ВЭПС+"
+                TextColor="Orange" />
+
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                <Button 
+                    Text="Табели" 
+                    Clicked="OnGoTimesheet"
+                    BackgroundColor="#3b9ab0"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Padding="20,10" />
+                <Button 
+                    Text="Заправки" 
+                    Clicked="OnGoFuel"
+                    BackgroundColor="#3b9ab0"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Padding="20,10" />
+                <Button 
+                    Text="Профиль" 
+                    Clicked="OnGoProfile"
+                    BackgroundColor="#3b9ab0"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Padding="20,10" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
